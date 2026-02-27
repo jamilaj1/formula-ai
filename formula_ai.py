@@ -41,7 +41,7 @@ if check_password():
             st.rerun()
 
     # --- 3. تهيئة الذكاء الاصطناعي (متعدد اللغات) ---
-    MY_API_KEY = "AIzaSyAJdhE3GqrkACLBnJUnSRfoFa4A2_OZVMk"
+    MY_API_KEY = st.secrets["API_KEY"]
     
     @st.cache_resource
     def load_global_model(api_key):
@@ -86,4 +86,5 @@ if check_password():
         with st.chat_message("assistant"):
             response = st.session_state.chat_session.send_message(prompt)
             st.markdown(response.text)
+
             st.session_state.messages.append({"role": "assistant", "content": response.text})
