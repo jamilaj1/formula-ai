@@ -81,4 +81,110 @@ def render_auth_page():
             if len(s_pass) < 6:
                 st.warning("⚠️ For your security, the password must be at least 6 characters.")
             elif not s_email or not s_name:
-                st.warning("⚠️ Full Name and Professional Email are required fields
+                st.warning("⚠️ Full Name and Professional Email are required fields.")
+            else:
+                try:
+                    # Register user and save Name & Phone in metadata
+                    response = supabase.auth.sign_up({
+                        "email": s_email, 
+                        "password": s_pass,
+                        "options": {
+                            "data": {
+                                "full_name": s_name,
+                                "phone_number": s_phone
+                            }
+                        }
+                    })
+                    
+                    # Auto-Login and personalized greeting
+                    if response.user:
+                        st.session_state.user_email = response.user.email
+                        st.session_state.is_admin = (response.user.email == ADMIN_EMAIL)
+                        
+                        # Elegant success message
+                        st.success(f"✅ Welcome aboard, {s_name}! Provisioning your secure lab environment...")
+                        time.sleep(1.5) # A brief, elegant pause before redirecting
+                        st.rerun()
+
+                except Exception as e:
+                    st.error(f"❌ Account creation failed. Error: {e}")
+
+# --- 5. ADMIN DASHBOARD ---
+def render_admin_dashboard():
+    with st.sidebar:
+        st.error("🛡️ ADMIN MODE")
+        st.write(f"Logged in as: {st.session_state.user_email}")
+        if st.button("Logout 🚪", key="admin_logout"):
+            st.session_state.user_email = None
+            st.session_state.is_admin = False
+            st.rerun()
+
+    st.title("🛡️ Executive Administration")
+    st.markdown("Welcome to the master control panel. Monitor platform metrics below.")
+    st.divider()
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown('<div class="card"><div class="stat-value">Active</div><div class="stat-label">System Status</div></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="card"><div class="stat-value">v3.0</div><div class="stat-label">Platform Version</div></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="card"><div class="stat-value">Secured</div><div class="stat-label">Database Link</div></div>', unsafe_allow_html=True)
+
+    st.markdown("### 👥 Client Management")
+    st.info("Client details (Names, Emails, Phone Numbers) are securely stored. Access the 'Authentication' tab in your Supabase Dashboard to view complete profiles.")
+
+# --- 6. MAIN APPLICATION (CLIENT LAB) ---
+def render_client_app():
+    with st.sidebar:
+        st.success("🟢 Online - Premium Account")
+        st.write(f"User: {st.session_state.user_email}")
+        st.divider()
+        if st.button("New Session 🧹"):
+            st.session_state.msg = []
+            if "chat" in st.session_state: del st.session_state.chat
+            st.rerun()
+        if st.button("Logout 🚪"):
+            st.session_state.user_email = None
+            st.rerun()
+
+    st.title("🧪 Formula AI Studio")
+    st.markdown("Welcome to the premium formulation lab. Enter your production parameters below.")
+    
+    try:
+        MY_API_KEY = st.secrets["API_KEY"]
+        genai.configure(api_key=MY_API_KEY)
+        
+        @st.cache_resource
+        def load_ai_model():
+            instr = "You are 'Formula AI', an expert chemical engineer. Reply in the user's language. Keep technical terms and formulas in Professional English. Ask for: 1) Sector, 2) Objective, 3) Batch Size, 4) Local Currency."
+            models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            return genai.GenerativeModel(model_name=models[0], system_instruction=instr)
+            
+        ai_model = load_ai_model()
+        
+        if "msg" not in st.session_state: st.session_state.msg = []
+        if "chat" not in st.session_state: st.session_state.chat = ai_model.start_chat(history=[])
+
+        for m in st.session_state.msg:
+            with st.chat_message(m["role"]): st.markdown(m["content"])
+
+        if prompt := st.chat_input("Enter your formulation parameters..."):
+            st.session_state.msg.append({"role": "user", "content": prompt})
+            with st.chat_message("user"): st.markdown(prompt)
+            
+            with st.chat_message("assistant"):
+                res = st.session_state.chat.send_message(prompt)
+                st.markdown(res.text)
+                st.session_state.msg.append({"role": "assistant", "content": res.text})
+                
+    except Exception as e:
+        st.error(f"⚠️ System Alert: Could not connect to AI Engine. Error: {e}")
+
+# --- 7. ROUTING ENGINE ---
+if st.session_state.user_email is None:
+    render_auth_page()
+elif st.session_state.is_admin:
+    render_admin_dashboard()
+else:
+    render_client_app()
