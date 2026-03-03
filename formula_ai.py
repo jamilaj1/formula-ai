@@ -11,7 +11,7 @@ st.markdown("""
 <style>
     /* Force main background to Gemini Dark */
     .stApp {
-        background-color: #131314 !format;
+        background-color: #131314 !important;
         color: #e3e3e3 !important;
     }
     
