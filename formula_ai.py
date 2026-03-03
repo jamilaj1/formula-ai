@@ -3,99 +3,61 @@ import google.generativeai as genai
 from supabase import create_client, Client
 import time
 
-# --- 1. PAGE CONFIGURATION & THEME ---
-# Updated Title: Only "Formula AI"
-st.set_page_config(page_title="Formula AI | Premium", page_icon="🧪", layout="centered")
+# --- 1. PAGE CONFIGURATION ---
+st.set_page_config(page_title="Formula AI | Professional", page_icon="🧪", layout="centered")
 
-# Professional UI Styling with Pricing Cards
+# Professional UI Styling
 st.markdown("""
 <style>
-    /* Styling for the main clean titles */
     .main-title { font-size: 3rem; font-weight: 800; text-align: center; color: #0F172A; margin-bottom: 0px; }
     .sub-title { font-size: 1.1rem; text-align: center; color: #64748B; margin-bottom: 30px; }
-    
-    /* Elegant styling for buttons */
     .stButton>button { border-radius: 8px; font-weight: 600; width: 100%; padding: 12px 0; }
-    
-    /* Sidebar name & badge styling (No Email Shown) */
-    .sidebar-name { font-size: 1.5rem; font-weight: 700; color: #1E293B; margin-top: 5px; }
+    .sidebar-name { font-size: 1.4rem; font-weight: 700; color: #1E293B; margin-top: 5px; }
     .premium-badge { background-color: #FACC15; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; }
-    
-    /* Pricing Table design */
-    .pricing-card { background-color: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 12px; padding: 20px; text-align: center; height: 100%;}
-    .pricing-header { font-size: 1.5rem; font-weight: 700; color: #1E293B; }
-    .price { font-size: 2.2rem; font-weight: 800; color: #2563EB; margin: 10px 0; }
+    .quota-info { font-size: 0.9rem; color: #64748B; margin-bottom: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
 # --- 2. DATABASE INITIALIZATION ---
 @st.cache_resource
 def init_db() -> Client:
-    # Safely connect to Supabase
-    try:
-        url = st.secrets["SUPABASE_URL"]
-        key = st.secrets["SUPABASE_KEY"]
-        return create_client(url, key)
-    except Exception as e:
-        st.error(f"Database Config Missing: {e}")
-        return None
+    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 try:
     supabase = init_db()
-except:
-    supabase = None
+except Exception as e:
+    st.error(f"Database Connection Error: {e}")
 
-# --- 3. SESSION STATE ---
-if "user_email" not in st.session_state: 
-    st.session_state.user_email = None
+# --- 3. SESSION STATE MANAGEMENT ---
+if "user_email" not in st.session_state: st.session_state.user_email = None
+if "free_usage_count" not in st.session_state: st.session_state.free_usage_count = 0
 
-# --- 4. AUTHENTICATION & PRICING UI ---
+# --- 4. AUTHENTICATION MODULE ---
 def render_auth_page():
-    # Title: Clean "Formula AI"
-    st.markdown('<p class="main-title">Formula AI Global 🌍</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">Advanced chemical formulation intelligence for professionals.</p>', unsafe_allow_html=True)
-    
-    # Pricing Table to encourage registration
-    st.markdown("### 💎 Choose Your Plan")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("""<div class="pricing-card">
-            <div class="pricing-header">Guest Preview</div>
-            <div class="price">$0</div>
-            <p>• View Interface<br>• No AI Interaction<br>• Limited Preview</p>
-        </div>""", unsafe_allow_html=True)
-    with col2:
-        st.markdown("""<div class="pricing-card" style="border-color: #2563EB;">
-            <div class="pricing-header">Premium PRO</div>
-            <div class="price">$29/mo</div>
-            <p>• Unlimited AI Formulas<br>• GHS Cost Analysis<br>• Technical Support</p>
-        </div>""", unsafe_allow_html=True)
-    
+    st.markdown('<p class="main-title">Formula AI 🌍</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-title">The global intelligence for chemical manufacturing.</p>', unsafe_allow_html=True)
     st.divider()
-    
-    # Login & Register Tabs
+
     tab1, tab2 = st.tabs(["🔐 Secure Login", "📝 Create Pro Account"])
 
     with tab1:
-        l_email = st.text_input("Email", key="l_email")
-        l_pass = st.text_input("Password", type="password", key="l_pass")
-        if st.button("Authenticate & Access"):
-            if not supabase: return
+        st.markdown("### Access Your Workspace")
+        l_email = st.text_input("Professional Email", key="login_email")
+        l_pass = st.text_input("Password", type="password", key="login_pass")
+        if st.button("Authenticate & Enter"):
             try:
                 res = supabase.auth.sign_in_with_password({"email": l_email, "password": l_pass})
                 st.session_state.user_email = res.user.email
                 st.rerun()
-            except: 
-                st.error("❌ Invalid credentials. Please try again.")
+            except: st.error("❌ Invalid credentials. Please try again.")
 
     with tab2:
-        s_name = st.text_input("Full Name (Official)", placeholder="Jamil Abduljalil", key="s_name")
-        s_email = st.text_input("Email Address", key="s_email")
-        s_pass = st.text_input("Create Secure Password", type="password", key="s_pass")
-        if st.button("Register & Initialize PRO Account"):
-            if not supabase: return
-            if len(s_pass) < 6 or not s_name or not s_email: 
-                st.warning("⚠️ Full Name, Email, and 6-char password are required.")
+        st.markdown("### Join Formula AI Pro")
+        s_name = st.text_input("Full Name", placeholder="e.g. Jamil Abduljalil")
+        s_email = st.text_input("Email Address")
+        s_pass = st.text_input("Secure Password (Min 6 chars)", type="password")
+        if st.button("Register & Unlock Pro Access"):
+            if len(s_pass) < 6 or not s_name: st.warning("⚠️ Full Name and 6-char password are required.")
             else:
                 try:
                     res = supabase.auth.sign_up({
@@ -103,64 +65,74 @@ def render_auth_page():
                         "options": {"data": {"full_name": s_name}}
                     })
                     if res.user:
-                        # Auto-login after registration
                         st.session_state.user_email = res.user.email
-                        st.success(f"✅ Welcome aboard, {s_name}!")
+                        st.success(f"✅ Welcome, {s_name}! Initializing Pro environment...")
                         time.sleep(1.5)
                         st.rerun()
-                except Exception as e: 
-                    st.error(f"❌ Error during registration: {e}")
+                except Exception as e: st.error(f"❌ Error: {e}")
 
-# --- 5. PREMIUM LABORATORY (MAIN APP) ---
+# --- 5. MAIN LABORATORY INTERFACE ---
 def render_lab():
-    # Fetch user's Full Name from Supabase Metadata
-    try:
-        user_data = supabase.auth.get_user()
-        display_name = user_data.user.user_metadata.get("full_name", "Valued Client")
-    except: 
-        display_name = "Premium Operator"
+    # User Identification
+    is_pro = st.session_state.user_email is not None
+    display_name = "Guest User"
+    
+    if is_pro:
+        try:
+            user_data = supabase.auth.get_user()
+            display_name = user_data.user.user_metadata.get("full_name", "Premium Operator")
+        except: display_name = "Premium Operator"
 
-    # Sidebar: Personalized, clean, showing NAME ONLY
+    # Sidebar Navigation
     with st.sidebar:
-        st.markdown(f"**Operator:**\n<div class='sidebar-name'>{display_name} <span class='premium-badge'>PRO</span></div>", unsafe_allow_html=True)
-        st.success("🟢 Connection: SECURE")
+        if is_pro:
+            st.markdown(f"<div class='sidebar-name'>{display_name} <span class='premium-badge'>PRO</span></div>", unsafe_allow_html=True)
+            st.success("🟢 Connection: SECURE")
+        else:
+            st.markdown(f"<div class='sidebar-name'>Guest Access</div>", unsafe_allow_html=True)
+            st.markdown(f"<p class='quota-info'>Free Formulas: {st.session_state.free_usage_count} / 2</p>", unsafe_allow_html=True)
+            if st.button("Login to Unlock Pro 🔓"):
+                render_auth_page()
+                return
+
         st.divider()
-        if st.button("Clear Lab Records 🧹"):
+        if st.button("New Session 🧹"):
             st.session_state.msg = []
             if "chat" in st.session_state: del st.session_state.chat
             st.rerun()
-        if st.button("Secure Logout 🚪"):
+        if is_pro and st.button("Secure Logout 🚪"):
             st.session_state.user_email = None
             st.rerun()
 
-    # Title: Clean "Formula AI"
     st.title("🧪 Formula AI")
-    st.markdown(f"Greetings, **{display_name}**. The AI laboratory is ready for your parameters.")
+    st.markdown(f"Greetings, **{display_name}**. The laboratory is ready for your parameters.")
 
-    # --- AI CHAT CORE (Only for PRO Users) ---
+    # --- RESTRICTION LOGIC ---
+    can_use_ai = True
+    if not is_pro and st.session_state.free_usage_count >= 2:
+        can_use_ai = False
+        st.error("⚠️ Free usage limit reached. Please register a Pro account to continue.")
+        if st.button("Go to Registration Page"):
+             st.session_state.show_auth = True
+             st.rerun()
+        return
+
+    # --- AI ENGINE CORE ---
     try:
-        MY_API_KEY = st.secrets["API_KEY"]
-        genai.configure(api_key=MY_API_KEY)
+        genai.configure(api_key=st.secrets["API_KEY"])
+        model = genai.GenerativeModel("gemini-1.5-flash", 
+            system_instruction="You are Formula AI Expert. Provide precise chemical formulas and GHS cost analysis. Ask for Sector, Batch Size, and Currency.")
         
-        @st.cache_resource
-        def init_ai_model():
-            # Injecting system identity as a Senior Engineer
-            instr = "You are Formula AI Expert. You are a senior chemical engineer. Reply in user's language. Provide precise formulas and cost analysis in GHS. Ask for Sector, Objective, Batch Size, Currency (if not GHS)."
-            models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            return genai.GenerativeModel(model_name=models[0], system_instruction=instr)
-            
-        ai_engine = init_ai_model()
-        
-        # Initialize Chat History
         if "msg" not in st.session_state: st.session_state.msg = []
-        if "chat" not in st.session_state: st.session_state.chat = ai_engine.start_chat(history=[])
+        if "chat" not in st.session_state: st.session_state.chat = model.start_chat(history=[])
 
-        # Display Chat History
         for m in st.session_state.msg:
             with st.chat_message(m["role"]): st.markdown(m["content"])
 
-        # Input & Response Logic
-        if prompt := st.chat_input("Enter formula query or goals..."):
+        if prompt := st.chat_input("Enter your formulation query..."):
+            if not is_pro:
+                st.session_state.free_usage_count += 1
+            
             st.session_state.msg.append({"role": "user", "content": prompt})
             with st.chat_message("user"): st.markdown(prompt)
             
@@ -168,16 +140,17 @@ def render_lab():
                 response = st.session_state.chat.send_message(prompt)
                 st.markdown(response.text)
                 st.session_state.msg.append({"role": "assistant", "content": response.text})
-                
-    except Exception as e: 
-        st.error(f"⚠️ AI Core is offline. Please check secrets/API Key. Details: {e}")
+    except Exception as e: st.error(f"⚠️ AI Core Error: {e}")
 
-# --- 6. ROUTING ENGINE ---
-if st.session_state.user_email is None:
-    render_auth_page()
-else:
-    # Routing requires active supabase connection
-    if supabase:
-        render_lab()
+# --- 6. ROUTING ---
+if st.session_state.user_email is None and st.session_state.get('show_auth', True):
+    if st.session_state.free_usage_count < 2 and not st.session_state.get('force_auth', False):
+        # Allow guest to see the lab first
+        if st.button("Enter as Guest (Limited)"):
+            st.session_state.show_auth = False
+            st.rerun()
+        render_auth_page()
     else:
-        st.error("Database connection failed. App cannot load.")
+        render_auth_page()
+else:
+    render_lab()
