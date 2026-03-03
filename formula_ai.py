@@ -28,7 +28,6 @@ try:
 except Exception as e:
     st.error(f"Database Initialization Error: {e}")
 
-# Super Admin Email (Change this if needed)
 ADMIN_EMAIL = "jamilaj1@gmail.com"
 
 # --- 3. SESSION STATE MANAGEMENT ---
@@ -43,8 +42,9 @@ def render_auth_page():
     st.markdown('<p class="sub-title">Sign in or create an account to access the formulation laboratory.</p>', unsafe_allow_html=True)
     st.divider()
 
-    tab1, tab2 = st.tabs(["🔐 Log In", "📝 Sign Up"])
+    tab1, tab2 = st.tabs(["🔐 Log In", "📝 Create Account"])
 
+    # --- LOGIN TAB ---
     with tab1:
         st.markdown("### Welcome Back")
         l_email = st.text_input("Email Address", key="login_email")
@@ -52,28 +52,47 @@ def render_auth_page():
         
         if st.button("Access Account"):
             try:
-                # Direct Authentication via Supabase
                 response = supabase.auth.sign_in_with_password({"email": l_email, "password": l_pass})
                 st.session_state.user_email = response.user.email
                 st.session_state.is_admin = (response.user.email == ADMIN_EMAIL)
                 st.rerun()
             except Exception as e:
-                if l_email == "admin" and l_pass == "123":
-                    st.warning("⚠️ Legacy login is disabled. Please create a real account in the 'Sign Up' tab.")
-                else:
-                    st.error("❌ Invalid credentials. Please check your email and password.")
+                st.error("❌ Invalid credentials. Please check your email and password.")
 
+    # --- SIGN UP TAB (UPDATED WITH PHONE & AUTO-LOGIN) ---
     with tab2:
-        st.markdown("### Create New Account")
+        st.markdown("### Start Your Journey")
         s_email = st.text_input("Email Address", key="signup_email")
+        s_phone = st.text_input("Phone Number (Optional)", placeholder="+233 ...", key="signup_phone")
         s_pass = st.text_input("Password (Min 6 characters)", type="password", key="signup_pass")
         
-        if st.button("Register Account"):
-            try:
-                response = supabase.auth.sign_up({"email": s_email, "password": s_pass})
-                st.success("✅ Account created successfully! You can now log in using the 'Log In' tab.")
-            except Exception as e:
-                st.error(f"❌ Registration failed. Error: {e}")
+        if st.button("Register & Enter Lab"):
+            if len(s_pass) < 6:
+                st.warning("⚠️ Password must be at least 6 characters.")
+            elif not s_email:
+                st.warning("⚠️ Email is required.")
+            else:
+                try:
+                    # Register user and save phone number in metadata
+                    response = supabase.auth.sign_up({
+                        "email": s_email, 
+                        "password": s_pass,
+                        "options": {
+                            "data": {
+                                "phone_number": s_phone
+                            }
+                        }
+                    })
+                    
+                    # Auto-Login immediately after successful registration
+                    if response.user:
+                        st.session_state.user_email = response.user.email
+                        st.session_state.is_admin = (response.user.email == ADMIN_EMAIL)
+                        st.success("✅ Account created successfully! Entering lab...")
+                        st.rerun() # This automatically refreshes the page to show the app!
+
+                except Exception as e:
+                    st.error(f"❌ Registration failed. Error: {e}")
 
 # --- 5. ADMIN DASHBOARD ---
 def render_admin_dashboard():
@@ -93,12 +112,12 @@ def render_admin_dashboard():
     with col1:
         st.markdown('<div class="card"><div class="stat-value">Active</div><div class="stat-label">System Status</div></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="card"><div class="stat-value">v2.1</div><div class="stat-label">Platform Version</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="card"><div class="stat-value">v2.5</div><div class="stat-label">Platform Version</div></div>', unsafe_allow_html=True)
     with col3:
         st.markdown('<div class="card"><div class="stat-value">Secured</div><div class="stat-label">Database Link</div></div>', unsafe_allow_html=True)
 
     st.markdown("### 👥 User Management")
-    st.info("To view registered client emails, reset passwords, or delete accounts, please access the 'Authentication' tab in your primary Supabase Dashboard.")
+    st.info("To view registered client emails and phone numbers, please access the 'Authentication' tab in your primary Supabase Dashboard.")
 
 # --- 6. MAIN APPLICATION (CLIENT LAB) ---
 def render_client_app():
