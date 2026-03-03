@@ -32,6 +32,7 @@ supabase = init_db()
 
 def get_ai_model():
     genai.configure(api_key=st.secrets["API_KEY"])
+    # Using stable model to avoid 404 errors
     return genai.GenerativeModel("gemini-1.5-flash")
 
 # --- 3. AUTHENTICATION MODULE (Safe Version) ---
@@ -40,22 +41,23 @@ def render_auth():
     tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
 
     with tab1:
-        email = st.text_input("Email", key="login_email_final")
+        email = st.text_input("Professional Email", key="login_email_final")
         password = st.text_input("Password", type="password", key="login_pass_final")
         if st.button("Access Laboratory", key="login_btn_final"):
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user_email = res.user.email
                 st.rerun()
-            except: st.error("Authentication failed.")
+            except: st.error("Authentication failed. Please check credentials.")
 
     with tab2:
-        reg_email = st.text_input("Email", key="reg_email_final")
+        reg_email = st.text_input("Professional Email", key="reg_email_final")
         reg_pass = st.text_input("Password", type="password", key="reg_pass_final")
         if st.button("Create Account", key="reg_btn_final"):
             try:
+                # Basic registration without extra table requirements
                 supabase.auth.sign_up({"email": reg_email, "password": reg_pass})
-                st.success("Account created! Please login.")
+                st.success("Account created! You can now login.")
             except Exception as e: st.error(f"Registration Error: {e}")
 
 # --- 4. MAIN INTERFACE ---
@@ -80,13 +82,13 @@ def render_main():
 
         with st.chat_message("assistant"):
             try:
-                # Use a cleaner prompt for industrial engineering
+                # Engineering expert persona
                 response = model.generate_content(f"Expert Engineer: {prompt}")
                 answer = response.text
                 st.markdown(answer)
                 st.session_state.chat_history.append({"role": "assistant", "content": answer})
             except Exception as e:
-                st.error(f"AI System Busy. Error: {e}")
+                st.error(f"AI System Error. Check API Key. Details: {e}")
 
 # --- 5. ROUTING ---
 if not st.session_state.user_email:
