@@ -1,6 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
 from supabase import create_client
+from google import genai
 
 # -----------------------------------
 # 1. PAGE CONFIG
@@ -53,8 +53,8 @@ def render_auth():
     tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
 
     with tab1:
-        email = st.text_input("Email", key="login_email")
-        password = st.text_input("Password", type="password", key="login_pass")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
 
         if st.button("Login"):
             try:
@@ -64,8 +64,8 @@ def render_auth():
                 })
                 st.session_state.user_email = res.user.email
                 st.rerun()
-            except Exception:
-                st.error("Authentication failed. Check email or password.")
+            except:
+                st.error("Authentication failed.")
 
     with tab2:
         reg_email = st.text_input("Email", key="reg_email")
@@ -77,9 +77,9 @@ def render_auth():
                     "email": reg_email,
                     "password": reg_pass
                 })
-                st.success("Account created successfully. Please login.")
+                st.success("Account created. Please login.")
             except Exception as e:
-                st.error(f"Registration error: {e}")
+                st.error(str(e))
 
 # -----------------------------------
 # 6. MAIN APP
@@ -95,18 +95,13 @@ def render_main():
     st.markdown("<h1 class='gemini-title'>Formula AI Pro</h1>", unsafe_allow_html=True)
     st.write("Advanced Industrial Intelligence Laboratory")
 
-    # AI CONFIG
-    genai.configure(api_key=st.secrets["API_KEY"])
+    # ✅ استخدام API الحديثة
+    client = genai.Client(api_key=st.secrets["API_KEY"])
 
-    # 🔥 موديل مستقر
-    model = genai.GenerativeModel("gemini-1.5-pro")
-
-    # عرض المحادثة السابقة
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # إدخال جديد
     if prompt := st.chat_input("Enter your manufacturing query..."):
 
         st.session_state.chat_history.append({
@@ -120,11 +115,12 @@ def render_main():
         with st.chat_message("assistant"):
             with st.spinner("Analyzing formulation parameters..."):
                 try:
-                    response = model.generate_content(
-                        f"You are a senior industrial chemical engineer. Answer professionally:\n{prompt}"
+                    response = client.models.generate_content(
+                        model="gemini-2.0-flash",
+                        contents=f"You are a senior industrial chemical engineer. Answer professionally:\n{prompt}"
                     )
-                    answer = response.text
 
+                    answer = response.text
                     st.markdown(answer)
 
                     st.session_state.chat_history.append({
