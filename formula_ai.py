@@ -3,77 +3,73 @@ import google.generativeai as genai
 from supabase import create_client, Client
 import time
 
-# --- 1. GLOBAL THEME & SIDEBAR VISIBILITY ---
-st.set_page_config(page_title="Formula AI", page_icon="🧪", layout="wide", initial_sidebar_state="expanded")
+# --- 1. PAGE SETUP ---
+st.set_page_config(page_title="Formula AI", page_icon="🧪", layout="wide")
 
-# CSS to force Gemini Dark and ensure Sidebar is visible and styled
-st.markdown("""
+# --- 2. DYNAMIC THEME ENGINE ---
+if "theme_mode" not in st.session_state:
+    st.session_state.theme_mode = "Dark"
+
+# Gemini Dark vs. Professional Light
+if st.session_state.theme_mode == "Dark":
+    bg = "#131314"
+    side = "#1e1f20"
+    txt = "#e3e3e3"
+    card = "#1e1f20"
+    inp_border = "#444746"
+else:
+    bg = "#ffffff"
+    side = "#f0f4f9"
+    txt = "#1f1f1f"
+    card = "#f8fafd"
+    inp_border = "#c4c7c5"
+
+# Injecting the theme directly into the app
+st.markdown(f"""
 <style>
-    /* Force main background */
-    .stApp {
-        background-color: #131314 !important;
-        color: #e3e3e3 !important;
-    }
-    
-    /* Force Sidebar to be visible and styled */
-    section[data-testid="stSidebar"] {
-        background-color: #1e1f20 !important;
-        border-right: 1px solid rgba(255,255,255,0.05) !important;
-        display: block !important;
-    }
-
-    /* Style sidebar text */
-    section[data-testid="stSidebar"] .stMarkdown p {
-        color: #e3e3e3 !important;
-    }
-
-    /* Gemini-style Title */
-    .gemini-title {
-        font-size: 3.5rem;
-        font-weight: 700;
+    .stApp {{ background-color: {bg} !important; color: {txt} !important; }}
+    section[data-testid="stSidebar"] {{ background-color: {side} !important; border-right: 1px solid rgba(255,255,255,0.05) !important; }}
+    .stChatInputContainer {{ background-color: {card} !important; border: 1px solid {inp_border} !important; border-radius: 28px !important; }}
+    .gemini-title {{
+        font-size: 3.5rem; font-weight: 700;
         background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         margin-bottom: 5px;
-    }
-
-    /* Chat Input Styling */
-    .stChatInputContainer {
-        background-color: #1e1f20 !important;
-        border-radius: 28px !important;
-        border: 1px solid #444746 !important;
-    }
+    }}
+    /* Style all sidebar text based on theme */
+    section[data-testid="stSidebar"] .stMarkdown p {{ color: {txt} !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. DATABASE & SESSION ---
+# --- 3. DATABASE & SESSION ---
 @st.cache_resource
 def init_db():
-    try:
-        return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
-    except:
-        return None
+    try: return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+    except: return None
 
 supabase = init_db()
-
 if "user_email" not in st.session_state: st.session_state.user_email = None
 if "free_usage" not in st.session_state: st.session_state.free_usage = 0
 
-# --- 3. SIDEBAR CONTENT ---
+# --- 4. SIDEBAR (The Return of the Toggle) ---
 with st.sidebar:
-    st.markdown("<br>### 🧪 Formula AI", unsafe_allow_html=True)
-    st.markdown("---")
+    st.markdown("<br>### ⚙️ Workspace Settings", unsafe_allow_html=True)
+    
+    # The Toggle Switch
+    is_dark = st.toggle("Dark Mode ✨", value=(st.session_state.theme_mode == "Dark"))
+    st.session_state.theme_mode = "Dark" if is_dark else "Light"
+    
+    st.divider()
     
     is_pro = st.session_state.user_email is not None
     if is_pro:
         try:
-            user_data = supabase.auth.get_user()
-            # جلب اسمك "جميل عبد الجليل" من البيانات
-            name = user_data.user.user_metadata.get("full_name", "Jamil Abduljalil")
+            user_res = supabase.auth.get_user()
+            name = user_res.user.user_metadata.get("full_name", "Jamil Abduljalil")
         except: name = "Jamil Abduljalil"
         
         st.markdown(f"**Operator:**\n### {name}")
-        st.markdown("<span style='color:#4285f4; font-weight:700;'>PREMIUM PRO ACCESS</span>", unsafe_allow_html=True)
+        st.markdown("<span style='color:#4285f4; font-weight:700;'>PREMIUM PRO</span>", unsafe_allow_html=True)
         if st.button("Logout 🚪"):
             st.session_state.user_email = None
             st.rerun()
@@ -83,10 +79,10 @@ with st.sidebar:
             st.session_state.show_auth = True
             st.rerun()
 
-# --- 4. MAIN INTERFACE ---
+# --- 5. MAIN LABORATORY ---
 def render_main():
     st.markdown('<p class="gemini-title">Formula AI</p>', unsafe_allow_html=True)
-    st.markdown("<p style='color:#b4b4b4; font-size:1.2rem;'>Advanced Chemical Engineering Intelligence</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#b4b4b4; font-size:1.2rem;'>Welcome to your workspace, {st.session_state.theme_mode} mode active.</p>", unsafe_allow_html=True)
 
     if not is_pro and st.session_state.free_usage >= 2:
         st.error("⚠️ Free limit reached. Please login to continue.")
@@ -101,25 +97,25 @@ def render_main():
         for m in st.session_state.msg:
             with st.chat_message(m["role"]): st.markdown(m["content"])
 
-        if prompt := st.chat_input("Ask about chemical formulas or costs..."):
+        if prompt := st.chat_input("Ask anything about formulations..."):
             if not is_pro: st.session_state.free_usage += 1
             st.session_state.msg.append({"role": "user", "content": prompt})
             with st.chat_message("user"): st.markdown(prompt)
             with st.chat_message("assistant"):
-                response = model.generate_content(f"Answer as chemical expert: {prompt}")
+                response = model.generate_content(f"Expert Engineer: {prompt}")
                 st.markdown(response.text)
                 st.session_state.msg.append({"role": "assistant", "content": response.text})
     except Exception as e:
-        st.error(f"System Error: {e}")
+        st.error(f"AI Core Error: {e}")
 
-# --- 5. AUTHENTICATION ---
+# --- 6. AUTHENTICATION ---
 def render_auth():
-    st.markdown('<p class="gemini-title">Professional Access</p>', unsafe_allow_html=True)
+    st.markdown('<p class="gemini-title">Pro Access</p>', unsafe_allow_html=True)
     tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
     with tab1:
         e = st.text_input("Email")
         p = st.text_input("Password", type="password")
-        if st.button("Access Laboratory"):
+        if st.button("Access Lab"):
             res = supabase.auth.sign_in_with_password({"email": e, "password": p})
             st.session_state.user_email = res.user.email
             st.rerun()
@@ -127,12 +123,12 @@ def render_auth():
         n = st.text_input("Full Name")
         e_s = st.text_input("Email")
         p_s = st.text_input("Password", type="password")
-        if st.button("Create Pro Account"):
+        if st.button("Initialize Pro"):
             res = supabase.auth.sign_up({"email": e_s, "password": p_s, "options": {"data": {"full_name": n}}})
             st.session_state.user_email = res.user.email
             st.rerun()
 
-# --- 6. ROUTING ---
+# --- 7. ROUTING ---
 if not is_pro and st.session_state.get('show_auth', False):
     render_auth()
     if st.button("← Back"):
