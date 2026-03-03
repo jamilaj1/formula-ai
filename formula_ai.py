@@ -1,11 +1,13 @@
 import streamlit as st
 import google.generativeai as genai
 from supabase import create_client, Client
+from datetime import datetime
+import uuid
 
-# --- 1. THE ULTIMATE VISUAL OVERRIDE (Hard-Coded Dark Mode) ---
+# --- 1. PAGE & FORCE DARK THEME ---
 st.set_page_config(page_title="Formula AI Pro", page_icon="🧪", layout="wide")
 
-# CSS to force Gemini Dark Theme and eliminate all white background patches
+# CSS to kill white patches and force Jamil's custom workspace look
 st.markdown("""
 <style>
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -31,87 +33,90 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. DATABASE & SESSION INITIALIZATION ---
+# --- 2. SESSION INITIALIZATION ---
 if "user_email" not in st.session_state: st.session_state.user_email = None
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
+# --- 3. DATABASE & AI CORE ---
 @st.cache_resource
 def init_db():
-    # Citing initialization from session setup logic
     return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 supabase = init_db()
 
-# --- 3. AUTHENTICATION MODULE (Fixed Duplicate IDs & Schema Errors) ---
+def get_ai_model():
+    genai.configure(api_key=st.secrets["API_KEY"])
+    # Fixed model name to avoid 404 errors
+    return genai.GenerativeModel("gemini-1.5-flash")
+
+# --- 4. AUTHENTICATION (Fixed Duplicate IDs) ---
 def render_auth():
     st.markdown("<p class='gemini-title'>Pro Access</p>", unsafe_allow_html=True)
-    tab1, tab2 = st.tabs(["🔐 Secure Login", "📝 Create Account"])
+    tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
 
     with tab1:
-        # Solving DuplicateElementId by using unique keys
-        email = st.text_input("Professional Email", key="unique_login_email")
-        password = st.text_input("Password", type="password", key="unique_login_pass")
-        if st.button("Access Laboratory", key="unique_login_btn"):
+        # Added unique keys to prevent DuplicateElementId error
+        email_log = st.text_input("Professional Email", key="login_email_unique")
+        pass_log = st.text_input("Password", type="password", key="login_pass_unique")
+        if st.button("Access Laboratory", key="login_btn_unique"):
             try:
-                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                res = supabase.auth.sign_in_with_password({"email": email_log, "password": pass_log})
                 st.session_state.user_email = res.user.email
                 st.rerun()
-            except:
-                st.error("Authentication failed. Please verify your credentials.")
+            except: st.error("Authentication failed. Please check credentials.")
 
     with tab2:
-        reg_email = st.text_input("Professional Email", key="unique_reg_email")
-        reg_pass = st.text_input("New Password", type="password", key="unique_reg_pass")
-        if st.button("Initialize Account", key="unique_reg_btn"):
+        name_reg = st.text_input("Full Name", placeholder="Jamil Abduljalil", key="reg_name_unique")
+        email_reg = st.text_input("Professional Email", key="reg_email_unique")
+        pass_reg = st.text_input("Password", type="password", key="reg_pass_unique")
+        if st.button("Create Account", key="reg_btn_unique"):
             try:
-                # Basic registration that works without extra DB table requirements
-                supabase.auth.sign_up({"email": reg_email, "password": reg_pass})
-                st.success("Account created successfully! You can now login.")
-            except Exception as e:
-                st.error(f"Registration Error: {e}")
+                # Signup only (removed the users_usage table call to avoid PGRST205 error)
+                supabase.auth.sign_up({"email": email_reg, "password": pass_reg, "options": {"data": {"full_name": name_reg}}})
+                st.success("Account created! Please login to continue.")
+            except Exception as e: st.error(f"Registration Error: {e}")
 
-# --- 4. MAIN LABORATORY INTERFACE (Stable Model Config) ---
+# --- 5. MAIN LABORATORY ---
 def render_main():
     with st.sidebar:
         st.markdown("### ⚙️ Workspace")
         st.success(f"Operator: {st.session_state.user_email}")
-        if st.button("Logout 🚪", key="unique_logout_btn"):
+        if st.button("Logout 🚪", key="logout_btn_main"):
             st.session_state.user_email = None
             st.rerun()
 
     st.markdown("<h1 class='gemini-title'>Formula AI Pro</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#b4b4b4; margin-top:-20px;'>Advanced Industrial Intelligence Laboratory</p>", unsafe_allow_html=True)
+    
+    model = get_ai_model()
 
-    # AI Engine Configuration solving the 404 error
-    try:
-        genai.configure(api_key=st.secrets["API_KEY"])
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        
-        # Display Chat History
-        for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+    # Display Chat History
+    for msg in st.session_state.chat_history:
+        with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-        # Chat Input Area
-        if prompt := st.chat_input("Enter your manufacturing query...", key="unique_chat_input"):
-            st.session_state.chat_history.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
+    # Chat Interaction
+    if prompt := st.chat_input("Enter manufacturing inquiry...", key="main_chat_input"):
+        st.session_state.chat_history.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.markdown(prompt)
 
-            with st.chat_message("assistant"):
-                with st.spinner("Analyzing parameters..."):
-                    try:
-                        response = model.generate_content(f"Expert Chemical Engineer Response: {prompt}")
-                        answer = response.text
-                        st.markdown(answer)
-                        st.session_state.chat_history.append({"role": "assistant", "content": answer})
-                    except Exception as e:
-                        st.error(f"AI System Busy. Error: {e}")
-    except Exception as sys_e:
-        st.error(f"System Configuration Error: {sys_e}")
+        with st.chat_message("assistant"):
+            try:
+                # System prompt for engineering expertise
+                response = model.generate_content(f"As a Senior Chemical Engineer, answer Jamil's query: {prompt}")
+                answer = response.text
+                st.markdown(answer)
+                st.session_state.chat_history.append({"role": "assistant", "content": answer})
+            except Exception as e:
+                st.error(f"AI Core Busy. Error: {e}")
 
-# --- 5. GLOBAL ROUTING ---
+    if st.button("Clear Chat", key="clear_chat_btn"):
+        st.session_state.chat_history = []
+        st.rerun()
+
+# --- 6. ROUTING ---
 if not st.session_state.user_email:
     render_auth()
+    if st.button("← Back to Preview", key="back_btn_nav"):
+        st.session_state.user_email = None # Placeholder for back nav
+        st.rerun()
 else:
     render_main()
