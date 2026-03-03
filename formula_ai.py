@@ -1,101 +1,85 @@
 import streamlit as st
 import google.generativeai as genai
-from supabase import create_client, Client
 
-# --- 1. STABLE PAGE CONFIGURATION ---
-st.set_page_config(page_title="Formula AI Pro", page_icon="🧪", layout="wide")
+# --- 1. Global Authentication System ---
+USERS = {"admin": "123", "jamil": "123"}
 
-# The Professional Dark Style that worked perfectly
-st.markdown("""
-<style>
-    .stApp { background-color: #131314; color: #e3e3e3; }
-    section[data-testid="stSidebar"] { background-color: #1e1f20; }
-    .gemini-title {
-        font-size: 3rem; font-weight: 700;
-        background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .stChatInputContainer { background-color: #1e1f20; border-radius: 28px; }
-</style>
-""", unsafe_allow_html=True)
-
-# --- 2. SESSION & DB INITIALIZATION ---
-if "user_email" not in st.session_state: st.session_state.user_email = None
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
-
-@st.cache_resource
-def init_db():
-    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
-
-supabase = init_db()
-
-# --- 3. AUTHENTICATION MODULE (Fixed Unique Keys) ---
-def render_auth():
-    st.markdown("<p class='gemini-title'>Pro Access</p>", unsafe_allow_html=True)
-    tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
-
-    with tab1:
-        # Fixed DuplicateElementId by using unique keys for Jamil's app
-        e_log = st.text_input("Professional Email", key="auth_login_email_safe")
-        p_log = st.text_input("Password", type="password", key="auth_login_pass_safe")
-        if st.button("Access Laboratory", key="btn_login_safe"):
-            try:
-                res = supabase.auth.sign_in_with_password({"email": e_log, "password": p_log})
-                st.session_state.user_email = res.user.email
-                st.rerun()
-            except:
-                st.error("Authentication failed. Please check credentials.")
-
-    with tab2:
-        e_reg = st.text_input("Professional Email", key="auth_reg_email_safe")
-        p_reg = st.text_input("Password", type="password", key="auth_reg_pass_safe")
-        if st.button("Initialize Account", key="btn_reg_safe"):
-            try:
-                supabase.auth.sign_up({"email": e_reg, "password": p_reg})
-                st.success("Account created successfully! Please login.")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-# --- 4. MAIN WORKSPACE (Gemini 1.5 Flash Stable) ---
-def render_main():
-    with st.sidebar:
-        st.markdown("### ⚙️ Workspace")
-        # Direct reference to Jamil's operator status
-        st.success(f"Operator: {st.session_state.user_email}")
-        if st.button("Logout 🚪", key="btn_logout_safe"):
-            st.session_state.user_email = None
-            st.rerun()
-
-    st.markdown("<h1 class='gemini-title'>Formula AI Pro</h1>", unsafe_allow_html=True)
-    st.write("Advanced Industrial Intelligence Laboratory")
-
-    # AI Config - Fixed model call to ensure stability
-    try:
-        genai.configure(api_key=st.secrets["API_KEY"])
-        model = genai.GenerativeModel("gemini-1.5-flash")
+def check_password():
+    if "auth" not in st.session_state: 
+        st.session_state.auth = False
         
-        # Displaying historical workspace dialogue
-        for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+    if not st.session_state.auth:
+        st.title("🌐 Formula AI Global")
+        st.markdown("Please log in to access the intelligent formulation agent.")
+        
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
+        
+        if st.button("Login"):
+            if u.lower() in USERS and USERS[u.lower()] == p:
+                st.session_state.auth = True
+                st.rerun()
+            else: 
+                st.error("❌ Invalid credentials. Please try again.")
+        return False
+    return True
 
-        # Chat Input at the bottom of the workspace
-        if prompt := st.chat_input("Enter your manufacturing query...", key="chat_input_safe"):
-            st.session_state.chat_history.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
+if check_password():
+    # --- 2. Global Agent Setup ---
+    st.set_page_config(page_title="Formula AI Global", page_icon="🧪")
+    
+    # Secure API Key retrieval from Streamlit Secrets
+    MY_API_KEY = st.secrets["API_KEY"]
+    
+    @st.cache_resource
+    def init_ai(key):
+        genai.configure(api_key=key)
+        instr = """
+        You are 'Formula AI', a world-class expert in Applied Chemistry. 
+        Detect the user's language automatically and reply in that exact language. 
+        CRITICAL: Keep all technical data, chemical names, formulas, and tables strictly in Professional English. 
+        Always ask for: 1) Industry Sector, 2) Formulation Objective, and 3) Mode (A-F) before providing any formulas.
+        """
+        m_list = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        return genai.GenerativeModel(model_name=m_list[0], system_instruction=instr)
 
-            with st.chat_message("assistant"):
-                # Senior Engineer persona for Jamil Abduljalil
-                response = model.generate_content(f"Expert Industrial Engineer: {prompt}")
-                st.markdown(response.text)
-                st.session_state.chat_history.append({"role": "assistant", "content": response.text})
-                
+    try:
+        ai_model = init_ai(MY_API_KEY)
     except Exception as e:
-        st.error(f"AI Core Busy. Details: {e}")
+        st.error(f"Failed to initialize AI: {e}")
+    
+    # --- 3. Chat Interface ---
+    st.title("🧪 Formula AI Agent")
+    
+    if "msg" not in st.session_state: 
+        st.session_state.msg = []
+    if "chat" not in st.session_state: 
+        st.session_state.chat = ai_model.start_chat(history=[])
 
-# --- 5. ROUTING ENGINE ---
-if not st.session_state.user_email:
-    render_auth()
-else:
-    render_main()
+    # Display chat history
+    for m in st.session_state.msg:
+        with st.chat_message(m["role"]): 
+            st.markdown(m["content"])
+
+    # User input
+    if prompt := st.chat_input("Ask in any language..."):
+        st.session_state.msg.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): 
+            st.markdown(prompt)
+            
+        with st.chat_message("assistant"):
+            try:
+                res = st.session_state.chat.send_message(prompt)
+                st.markdown(res.text)
+                st.session_state.msg.append({"role": "assistant", "content": res.text})
+            except Exception as e:
+                st.error(f"API Error: {e}. Please check your API key and connection.")
+
+    # --- 4. Sidebar Controls ---
+    with st.sidebar:
+        st.header("Control Panel")
+        st.markdown("---")
+        if st.button("New Session 🧹", use_container_width=True):
+            st.session_state.msg = []
+            st.session_state.chat = ai_model.start_chat(history=[])
+            st.rerun()
