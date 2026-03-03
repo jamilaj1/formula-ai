@@ -1,156 +1,125 @@
 import streamlit as st
 import google.generativeai as genai
 from supabase import create_client, Client
-import time
 
-# --- 1. PAGE CONFIGURATION ---
-st.set_page_config(page_title="Formula AI | Professional", page_icon="🧪", layout="centered")
+# --- 1. THE ULTIMATE VISUAL OVERRIDE (Killing the White Background) ---
+st.set_page_config(page_title="Formula AI Pro", page_icon="🧪", layout="wide")
 
-# Professional UI Styling
+# This block forces EVERY element to adopt the Gemini Dark theme
 st.markdown("""
 <style>
-    .main-title { font-size: 3rem; font-weight: 800; text-align: center; color: #0F172A; margin-bottom: 0px; }
-    .sub-title { font-size: 1.1rem; text-align: center; color: #64748B; margin-bottom: 30px; }
-    .stButton>button { border-radius: 8px; font-weight: 600; width: 100%; padding: 12px 0; }
-    .sidebar-name { font-size: 1.4rem; font-weight: 700; color: #1E293B; margin-top: 5px; }
-    .premium-badge { background-color: #FACC15; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; }
-    .quota-info { font-size: 0.9rem; color: #64748B; margin-bottom: 10px; }
+    /* Force main background and text colors */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"] {
+        background-color: #131314 !important;
+        color: #e3e3e3 !important;
+    }
+
+    /* Force Sidebar specific styling */
+    section[data-testid="stSidebar"] {
+        background-color: #1e1f20 !important;
+        border-right: 1px solid rgba(255,255,255,0.05) !important;
+    }
+    
+    /* Gemini Title with Gradient */
+    .gemini-title {
+        font-size: 3.5rem; font-weight: 700;
+        background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+
+    /* Professional Chat Input box */
+    .stChatInputContainer {
+        background-color: #1e1f20 !important;
+        border: 1px solid #444746 !important;
+        border-radius: 28px !important;
+    }
+
+    /* Hide standard Streamlit elements that cause white bars */
+    header { visibility: hidden !important; }
+    footer { visibility: hidden !important; }
+    #MainMenu { visibility: hidden !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. DATABASE INITIALIZATION ---
-@st.cache_resource
-def init_db() -> Client:
-    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
-
-try:
-    supabase = init_db()
-except Exception as e:
-    st.error(f"Database Connection Error: {e}")
-
-# --- 3. SESSION STATE MANAGEMENT ---
+# --- 2. SESSION & DATABASE ---
 if "user_email" not in st.session_state: st.session_state.user_email = None
-if "free_usage_count" not in st.session_state: st.session_state.free_usage_count = 0
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# --- 4. AUTHENTICATION MODULE ---
-def render_auth_page():
-    st.markdown('<p class="main-title">Formula AI 🌍</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">The global intelligence for chemical manufacturing.</p>', unsafe_allow_html=True)
-    st.divider()
+@st.cache_resource
+def init_db():
+    try:
+        return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+    except:
+        return None
 
-    tab1, tab2 = st.tabs(["🔐 Secure Login", "📝 Create Pro Account"])
+supabase = init_db()
+
+# --- 3. AUTHENTICATION (Safe & Unique IDs) ---
+def render_auth():
+    st.markdown("<p class='gemini-title'>Pro Access</p>", unsafe_allow_html=True)
+    tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
 
     with tab1:
-        st.markdown("### Access Your Workspace")
-        l_email = st.text_input("Professional Email", key="login_email")
-        l_pass = st.text_input("Password", type="password", key="login_pass")
-        if st.button("Authenticate & Enter"):
+        email = st.text_input("Professional Email", key="final_login_email")
+        password = st.text_input("Password", type="password", key="final_login_pass")
+        if st.button("Access Laboratory", key="final_login_btn"):
             try:
-                res = supabase.auth.sign_in_with_password({"email": l_email, "password": l_pass})
+                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user_email = res.user.email
                 st.rerun()
-            except: st.error("❌ Invalid credentials. Please try again.")
+            except:
+                st.error("Authentication failed. Please verify credentials.")
 
     with tab2:
-        st.markdown("### Join Formula AI Pro")
-        s_name = st.text_input("Full Name", placeholder="e.g. Jamil Abduljalil")
-        s_email = st.text_input("Email Address")
-        s_pass = st.text_input("Secure Password (Min 6 chars)", type="password")
-        if st.button("Register & Unlock Pro Access"):
-            if len(s_pass) < 6 or not s_name: st.warning("⚠️ Full Name and 6-char password are required.")
-            else:
-                try:
-                    res = supabase.auth.sign_up({
-                        "email": s_email, "password": s_pass,
-                        "options": {"data": {"full_name": s_name}}
-                    })
-                    if res.user:
-                        st.session_state.user_email = res.user.email
-                        st.success(f"✅ Welcome, {s_name}! Initializing Pro environment...")
-                        time.sleep(1.5)
-                        st.rerun()
-                except Exception as e: st.error(f"❌ Error: {e}")
+        reg_email = st.text_input("Professional Email", key="final_reg_email")
+        reg_pass = st.text_input("Create Password", type="password", key="final_reg_pass")
+        if st.button("Initialize Account", key="final_reg_btn"):
+            try:
+                supabase.auth.sign_up({"email": reg_email, "password": reg_pass})
+                st.success("Account created! You can now login.")
+            except Exception as e:
+                st.error(f"Registration Error: {e}")
 
-# --- 5. MAIN LABORATORY INTERFACE ---
-def render_lab():
-    # User Identification
-    is_pro = st.session_state.user_email is not None
-    display_name = "Guest User"
-    
-    if is_pro:
-        try:
-            user_data = supabase.auth.get_user()
-            display_name = user_data.user.user_metadata.get("full_name", "Premium Operator")
-        except: display_name = "Premium Operator"
-
-    # Sidebar Navigation
+# --- 4. MAIN LABORATORY (Gemini Engine) ---
+def render_main():
     with st.sidebar:
-        if is_pro:
-            st.markdown(f"<div class='sidebar-name'>{display_name} <span class='premium-badge'>PRO</span></div>", unsafe_allow_html=True)
-            st.success("🟢 Connection: SECURE")
-        else:
-            st.markdown(f"<div class='sidebar-name'>Guest Access</div>", unsafe_allow_html=True)
-            st.markdown(f"<p class='quota-info'>Free Formulas: {st.session_state.free_usage_count} / 2</p>", unsafe_allow_html=True)
-            if st.button("Login to Unlock Pro 🔓"):
-                render_auth_page()
-                return
-
-        st.divider()
-        if st.button("New Session 🧹"):
-            st.session_state.msg = []
-            if "chat" in st.session_state: del st.session_state.chat
-            st.rerun()
-        if is_pro and st.button("Secure Logout 🚪"):
+        st.markdown("### ⚙️ Workspace")
+        st.success(f"Verified Operator: {st.session_state.user_email}")
+        if st.button("Logout 🚪", key="final_logout_btn"):
             st.session_state.user_email = None
             st.rerun()
 
-    st.title("🧪 Formula AI")
-    st.markdown(f"Greetings, **{display_name}**. The laboratory is ready for your parameters.")
-
-    # --- RESTRICTION LOGIC ---
-    can_use_ai = True
-    if not is_pro and st.session_state.free_usage_count >= 2:
-        can_use_ai = False
-        st.error("⚠️ Free usage limit reached. Please register a Pro account to continue.")
-        if st.button("Go to Registration Page"):
-             st.session_state.show_auth = True
-             st.rerun()
-        return
-
-    # --- AI ENGINE CORE ---
+    st.markdown("<h1 class='gemini-title'>Formula AI Pro</h1>", unsafe_allow_html=True)
+    
+    # AI Config
     try:
         genai.configure(api_key=st.secrets["API_KEY"])
-        model = genai.GenerativeModel("gemini-1.5-flash", 
-            system_instruction="You are Formula AI Expert. Provide precise chemical formulas and GHS cost analysis. Ask for Sector, Batch Size, and Currency.")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         
-        if "msg" not in st.session_state: st.session_state.msg = []
-        if "chat" not in st.session_state: st.session_state.chat = model.start_chat(history=[])
+        # Display history
+        for msg in st.session_state.chat_history:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
 
-        for m in st.session_state.msg:
-            with st.chat_message(m["role"]): st.markdown(m["content"])
+        # Chat Input
+        if prompt := st.chat_input("Enter manufacturing query...", key="final_chat_input"):
+            st.session_state.chat_history.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-        if prompt := st.chat_input("Enter your formulation query..."):
-            if not is_pro:
-                st.session_state.free_usage_count += 1
-            
-            st.session_state.msg.append({"role": "user", "content": prompt})
-            with st.chat_message("user"): st.markdown(prompt)
-            
             with st.chat_message("assistant"):
-                response = st.session_state.chat.send_message(prompt)
-                st.markdown(response.text)
-                st.session_state.msg.append({"role": "assistant", "content": response.text})
-    except Exception as e: st.error(f"⚠️ AI Core Error: {e}")
+                try:
+                    response = model.generate_content(f"Expert Industrial Engineer: {prompt}")
+                    st.markdown(response.text)
+                    st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+                except Exception as e:
+                    st.error(f"AI System Error: {e}")
+    except Exception as sys_e:
+        st.error(f"System Load Error: {sys_e}")
 
-# --- 6. ROUTING ---
-if st.session_state.user_email is None and st.session_state.get('show_auth', True):
-    if st.session_state.free_usage_count < 2 and not st.session_state.get('force_auth', False):
-        # Allow guest to see the lab first
-        if st.button("Enter as Guest (Limited)"):
-            st.session_state.show_auth = False
-            st.rerun()
-        render_auth_page()
-    else:
-        render_auth_page()
+# --- 5. ROUTING ---
+if not st.session_state.user_email:
+    render_auth()
 else:
-    render_lab()
+    render_main()
