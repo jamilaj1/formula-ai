@@ -10,33 +10,22 @@ st.set_page_config(page_title="Formula AI", page_icon="🧪", layout="wide")
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Dark"
 
-# Gemini Dark vs. Professional Light
+# Define colors based on theme selection
 if st.session_state.theme_mode == "Dark":
-    bg = "#131314"
-    side = "#1e1f20"
-    txt = "#e3e3e3"
-    card = "#1e1f20"
-    inp_border = "#444746"
+    bg, side, txt, card, border = "#131314", "#1e1f20", "#e3e3e3", "#1e1f20", "#444746"
 else:
-    bg = "#ffffff"
-    side = "#f0f4f9"
-    txt = "#1f1f1f"
-    card = "#f8fafd"
-    inp_border = "#c4c7c5"
+    bg, side, txt, card, border = "#ffffff", "#f0f4f9", "#1f1f1f", "#f8fafd", "#c4c7c5"
 
-# Injecting the theme directly into the app
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg} !important; color: {txt} !important; }}
-    section[data-testid="stSidebar"] {{ background-color: {side} !important; border-right: 1px solid rgba(255,255,255,0.05) !important; }}
-    .stChatInputContainer {{ background-color: {card} !important; border: 1px solid {inp_border} !important; border-radius: 28px !important; }}
+    section[data-testid="stSidebar"] {{ background-color: {side} !important; }}
+    .stChatInputContainer {{ background-color: {card} !important; border: 1px solid {border} !important; border-radius: 28px !important; }}
     .gemini-title {{
         font-size: 3.5rem; font-weight: 700;
         background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
     }}
-    /* Style all sidebar text based on theme */
     section[data-testid="stSidebar"] .stMarkdown p {{ color: {txt} !important; }}
 </style>
 """, unsafe_allow_html=True)
@@ -51,11 +40,11 @@ supabase = init_db()
 if "user_email" not in st.session_state: st.session_state.user_email = None
 if "free_usage" not in st.session_state: st.session_state.free_usage = 0
 
-# --- 4. SIDEBAR (The Return of the Toggle) ---
+# --- 4. SIDEBAR (Restored Toggle & Profile) ---
 with st.sidebar:
     st.markdown("<br>### ⚙️ Workspace Settings", unsafe_allow_html=True)
     
-    # The Toggle Switch
+    # Restored Dark Mode Switch
     is_dark = st.toggle("Dark Mode ✨", value=(st.session_state.theme_mode == "Dark"))
     st.session_state.theme_mode = "Dark" if is_dark else "Light"
     
@@ -88,10 +77,10 @@ def render_main():
         st.error("⚠️ Free limit reached. Please login to continue.")
         return
 
-    # Chat Engine
+    # Chat Engine (Fixed Model Name)
     try:
         genai.configure(api_key=st.secrets["API_KEY"])
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")
         
         if "msg" not in st.session_state: st.session_state.msg = []
         for m in st.session_state.msg:
@@ -108,7 +97,7 @@ def render_main():
     except Exception as e:
         st.error(f"AI Core Error: {e}")
 
-# --- 6. AUTHENTICATION ---
+# --- 6. AUTHENTICATION & ROUTING ---
 def render_auth():
     st.markdown('<p class="gemini-title">Pro Access</p>', unsafe_allow_html=True)
     tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
@@ -128,7 +117,6 @@ def render_auth():
             st.session_state.user_email = res.user.email
             st.rerun()
 
-# --- 7. ROUTING ---
 if not is_pro and st.session_state.get('show_auth', False):
     render_auth()
     if st.button("← Back"):
