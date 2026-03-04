@@ -1,89 +1,54 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- 1. نظام المستخدمين ---
-USERS = {
-    "admin": "formula2026",
-    "jamil": "ghana2026"
-}
+# --- 1. نظام الدخول العالمي ---
+USERS = {"admin": "123", "jamil": "123"}
 
 def check_password():
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
-
-    if not st.session_state.authenticated:
+    if "auth" not in st.session_state: st.session_state.auth = False
+    if not st.session_state.auth:
         st.title("🌐 Formula AI Global")
-        st.write("Login to access the world's advanced chemical agent.")
-        
-        user = st.text_input("Username / اسم المستخدم")
-        password = st.text_input("Password / كلمة المرور", type="password")
-        
-        if st.button("Login / دخول"):
-            if user in USERS and USERS[user] == password:
-                st.session_state.authenticated = True
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if u in USERS and USERS[u] == p:
+                st.session_state.auth = True
                 st.rerun()
-            else:
-                st.error("❌ Incorrect credentials / بيانات خاطئة")
+            else: st.error("Wrong Data")
         return False
     return True
 
 if check_password():
-    # --- 2. إعدادات الواجهة العالمية ---
-    st.set_page_config(page_title="Formula AI Global", page_icon="🌍")
-    
-    with st.sidebar:
-        st.title("🌍 Global Control")
-        if st.button("New Session / جلسة جديدة 🧹", use_container_width=True):
-            st.session_state.messages = []
-            st.rerun()
-        if st.button("Logout / خروج 🚪"):
-            st.session_state.authenticated = False
-            st.rerun()
-
-    # --- 3. تهيئة الذكاء الاصطناعي (متعدد اللغات) ---
-    MY_API_KEY = "ضع_مفتاحك_هنا"
+    # --- 2. إعدادات الوكيل المتعدد اللغات ---
+    st.set_page_config(page_title="Formula AI Global", page_icon="🧪")
+    MY_API_KEY = "ضع_مفتاحك_هنا" # ضع مفتاح الـ API الخاص بك هنا
     
     @st.cache_resource
-    def load_global_model(api_key):
-        genai.configure(api_key=api_key)
-        # تعليمات "العالمية": الوكيل سيتعرف على لغة المستخدم تلقائياً
-        global_instructions = """
-        You are 'Formula AI', a global expert in Applied Chemistry.
-        
-        MULTILINGUAL RULES:
-        1. Detect the user's language automatically and respond in the SAME language.
-        2. TECHNICAL DATA: Always keep chemical names, formulas, and tables in Professional English to ensure global standards.
-        3. EXPLANATIONS: Provide instructions and safety notes in the user's native language.
-        
-        STRICT PROTOCOL:
-        - First response must ALWAYS ask for: 1) Industry Sector, 2) Objective, 3) Mode (A-F).
-        - Do not provide formulas until these are defined.
-        """
-        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        return genai.GenerativeModel(model_name=models[0], system_instruction=global_instructions)
+    def init_ai(key):
+        genai.configure(api_key=key)
+        instr = "You are 'Formula AI'. Detect user language and reply in it. Technical data in English. Ask for Sector, Objective, and Mode (A-F) first."
+        # البحث التلقائي عن الموديل المتاح
+        m_list = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        return genai.GenerativeModel(model_name=m_list[0], system_instruction=instr)
 
-    model = load_global_model(MY_API_KEY)
-
-    # --- 4. واجهة المحادثة ---
-    st.title("🧪 Formula AI Global Agent")
-    st.info("I support all languages. Start by describing your project.")
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    ai_model = init_ai(MY_API_KEY)
     
-    if "chat_session" not in st.session_state:
-        st.session_state.chat_session = model.start_chat(history=[])
+    # --- 3. واجهة المحادثة ---
+    st.title("🧪 Formula AI Agent")
+    if "msg" not in st.session_state: st.session_state.msg = []
+    if "chat" not in st.session_state: st.session_state.chat = ai_model.start_chat(history=[])
 
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    for m in st.session_state.msg:
+        with st.chat_message(m["role"]): st.markdown(m["content"])
 
-    if prompt := st.chat_input("Ask in any language... اسأل بأي لغة"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
+    if prompt := st.chat_input("Ask in any language..."):
+        st.session_state.msg.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.markdown(prompt)
         with st.chat_message("assistant"):
-            response = st.session_state.chat_session.send_message(prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
+            res = st.session_state.chat.send_message(prompt)
+            st.markdown(res.text)
+            st.session_state.msg.append({"role": "assistant", "content": res.text})
+
+    if st.sidebar.button("New Session / جلسة جديدة"):
+        st.session_state.msg = []
+        st.rerun()
