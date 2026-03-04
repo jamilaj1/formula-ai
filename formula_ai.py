@@ -1,127 +1,89 @@
 import streamlit as st
-from supabase import create_client
-from google import genai
-import time
+import google.generativeai as genai
 
-# --- 1. PAGE CONFIGURATION ---
-st.set_page_config(page_title="Formula AI | Premium", page_icon="🧪", layout="centered")
+# --- 1. نظام المستخدمين ---
+USERS = {
+    "admin": "formula2026",
+    "jamil": "ghana2026"
+}
 
-st.markdown("""
-<style>
-.main-title { font-size: 3rem; font-weight: 800; text-align: center; }
-.sub-title { font-size: 1.1rem; text-align: center; color: #64748B; margin-bottom: 30px; }
-.stButton>button { border-radius: 8px; font-weight: 600; width: 100%; padding: 12px 0; }
-.sidebar-name { font-size: 1.3rem; font-weight: 700; margin-top: 5px; }
-.premium-badge { background-color: #FACC15; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; }
-</style>
-""", unsafe_allow_html=True)
+def check_password():
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
 
-# --- 2. DATABASE ---
-@st.cache_resource
-def init_db():
-    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
-
-supabase = init_db()
-
-# --- 3. SESSION ---
-if "user_email" not in st.session_state:
-    st.session_state.user_email = None
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# --- 4. AUTH PAGE ---
-def render_auth_page():
-    st.markdown('<p class="main-title">Formula AI Global 🌍</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">Industrial Chemical Intelligence Platform</p>', unsafe_allow_html=True)
-
-    tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
-
-    with tab1:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-
-        if st.button("Login"):
-            try:
-                res = supabase.auth.sign_in_with_password({
-                    "email": email,
-                    "password": password
-                })
-                st.session_state.user_email = res.user.email
+    if not st.session_state.authenticated:
+        st.title("🌐 Formula AI Global")
+        st.write("Login to access the world's advanced chemical agent.")
+        
+        user = st.text_input("Username / اسم المستخدم")
+        password = st.text_input("Password / كلمة المرور", type="password")
+        
+        if st.button("Login / دخول"):
+            if user in USERS and USERS[user] == password:
+                st.session_state.authenticated = True
                 st.rerun()
-            except:
-                st.error("Invalid credentials.")
-
-    with tab2:
-        name = st.text_input("Full Name")
-        reg_email = st.text_input("Email Address")
-        reg_pass = st.text_input("Password (Min 6 chars)", type="password")
-
-        if st.button("Register"):
-            if len(reg_pass) < 6 or not name:
-                st.warning("Please complete all fields.")
             else:
-                try:
-                    supabase.auth.sign_up({
-                        "email": reg_email,
-                        "password": reg_pass,
-                        "options": {"data": {"full_name": name}}
-                    })
-                    st.success("Account created. Please login.")
-                except Exception as e:
-                    st.error(str(e))
+                st.error("❌ Incorrect credentials / بيانات خاطئة")
+        return False
+    return True
 
-# --- 5. MAIN LAB ---
-def render_lab():
-
-    client = genai.Client(api_key=st.secrets["API_KEY"])
-
+if check_password():
+    # --- 2. إعدادات الواجهة العالمية ---
+    st.set_page_config(page_title="Formula AI Global", page_icon="🌍")
+    
     with st.sidebar:
-        st.success(f"Operator: {st.session_state.user_email}")
-        if st.button("Clear History"):
+        st.title("🌍 Global Control")
+        if st.button("New Session / جلسة جديدة 🧹", use_container_width=True):
             st.session_state.messages = []
             st.rerun()
-        if st.button("Logout"):
-            st.session_state.user_email = None
+        if st.button("Logout / خروج 🚪"):
+            st.session_state.authenticated = False
             st.rerun()
 
-    st.title("🧪 Formula AI Studio")
-    st.markdown("Ask for industrial formulations, cost analysis, or scaling calculations.")
+    # --- 3. تهيئة الذكاء الاصطناعي (متعدد اللغات) ---
+    MY_API_KEY = "ضع_مفتاحك_هنا"
+    
+    @st.cache_resource
+    def load_global_model(api_key):
+        genai.configure(api_key=api_key)
+        # تعليمات "العالمية": الوكيل سيتعرف على لغة المستخدم تلقائياً
+        global_instructions = """
+        You are 'Formula AI', a global expert in Applied Chemistry.
+        
+        MULTILINGUAL RULES:
+        1. Detect the user's language automatically and respond in the SAME language.
+        2. TECHNICAL DATA: Always keep chemical names, formulas, and tables in Professional English to ensure global standards.
+        3. EXPLANATIONS: Provide instructions and safety notes in the user's native language.
+        
+        STRICT PROTOCOL:
+        - First response must ALWAYS ask for: 1) Industry Sector, 2) Objective, 3) Mode (A-F).
+        - Do not provide formulas until these are defined.
+        """
+        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        return genai.GenerativeModel(model_name=models[0], system_instruction=global_instructions)
 
-    # Display chat history
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+    model = load_global_model(MY_API_KEY)
 
-    # New prompt
-    if prompt := st.chat_input("Enter your manufacturing query..."):
+    # --- 4. واجهة المحادثة ---
+    st.title("🧪 Formula AI Global Agent")
+    st.info("I support all languages. Start by describing your project.")
 
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    if "chat_session" not in st.session_state:
+        st.session_state.chat_session = model.start_chat(history=[])
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Ask in any language... اسأل بأي لغة"):
         st.session_state.messages.append({"role": "user", "content": prompt})
-
         with st.chat_message("user"):
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            with st.spinner("Analyzing formulation parameters..."):
-                try:
-                    response = client.models.generate_content(
-                        model="gemini-2.0-flash",
-                        contents=f"You are a senior industrial chemical engineer. Answer professionally:\n{prompt}"
-                    )
-
-                    answer = response.text
-                    st.markdown(answer)
-
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": answer
-                    })
-
-                except Exception as e:
-                    st.error(f"AI Error: {e}")
-
-# --- 6. ROUTING ---
-if st.session_state.user_email is None:
-    render_auth_page()
-else:
-    render_lab()
+            response = st.session_state.chat_session.send_message(prompt)
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
