@@ -4,10 +4,9 @@ from supabase import create_client, Client
 import uuid
 
 # --- 1. إعدادات الصفحة والهوية البصرية ---
-# وضع الإعدادات في البداية لتجنب أخطاء التحميل
 st.set_page_config(page_title="Formula AI Pro", page_icon="🧪", layout="wide")
 
-# فرض الوضع الداكن الاحترافي لحل مشاكل البقع البيضاء
+# فرض الوضع الداكن الاحترافي
 st.markdown("""
 <style>
     .stApp { background-color: #131314 !important; color: #e3e3e3 !important; }
@@ -32,9 +31,9 @@ def init_connections():
     # ربط Supabase باستخدام Secrets
     sb_client = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
     
-    # ربط Gemini مع استخدام الاسم المستقر لحل خطأ 404
+    # ربط Gemini مع استخدام التعريف الصريح للموديل لحل خطأ 404
     genai.configure(api_key=st.secrets["API_KEY"])
-    # تصحيح: استخدام الاسم المجرد للموديل لتجاوز خطأ v1beta
+    # الحل القاطع: نترك المكتبة تختار أفضل مسار مستقر تلقائياً
     ai_model = genai.GenerativeModel("gemini-1.5-flash")
     return sb_client, ai_model
 
@@ -46,7 +45,6 @@ def render_auth():
     tab1, tab2 = st.tabs(["🔐 Secure Login", "📝 Create Account"])
     
     with tab1:
-        # استخدام مفاتيح فريدة (keys) لمنع انهيار التطبيق
         e_log = st.text_input("Professional Email", key="auth_login_email_unique")
         p_log = st.text_input("Password", type="password", key="auth_login_pass_unique")
         if st.button("Authenticate & Enter", key="auth_login_btn_unique"):
@@ -58,20 +56,19 @@ def render_auth():
                 st.error("❌ Authentication failed. Verify credentials.")
 
     with tab2:
-        n_reg = st.text_input("Full Name", placeholder="Jamil Abduljalil", key="auth_reg_name_unique")
+        n_reg = st.text_input("Full Name", placeholder="e.g., Jamil Abduljalil", key="auth_reg_name_unique")
         e_reg = st.text_input("Email", key="auth_reg_email_unique")
         p_reg = st.text_input("Security Password", type="password", key="auth_reg_pass_unique")
         if st.button("Initialize Pro Account", key="auth_reg_btn_unique"):
             try:
-                # التسجيل وربطه بجدول الاستخدام الذي أنشأته
                 auth_res = supabase.auth.sign_up({"email": e_reg, "password": p_reg, "options": {"data": {"full_name": n_reg}}})
-                # حل خطأ PGRST205 بإضافة السجل في الجدول الجديد
+                # إضافة السجل في الجدول الذي أنشأته بنجاح
                 supabase.table("users_usage").insert({"email": e_reg, "is_pro": True}).execute()
                 st.success("✅ Account created! Please login.")
             except Exception as e:
                 st.error(f"❌ Database/Auth Error: {e}")
 
-# --- 4. المختبر الكيميائي الرئيسي (المساحة المستقرة) ---
+# --- 4. المختبر الكيميائي الرئيسي ---
 def render_main():
     with st.sidebar:
         st.markdown("### ⚙️ Workspace Settings")
@@ -83,25 +80,23 @@ def render_main():
     st.markdown('<p class="gemini-title">Formula AI Pro</p>', unsafe_allow_html=True)
     st.markdown("<p style='color:#b4b4b4;'>Advanced Industrial Intelligence Laboratory</p>", unsafe_allow_html=True)
 
-    # عرض تاريخ المحادثة
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-    # إدخال الاستفسارات الصناعية
     if prompt := st.chat_input("Enter your manufacturing query...", key="chat_input_unique"):
         st.session_state.chat_history.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
         
         with st.chat_message("assistant"):
             try:
-                # استدعاء الموديل المستقر
+                # إرسال الاستفسار للموديل المستقر
                 response = model.generate_content(f"As a Senior Chemical Engineer, answer: {prompt}")
                 st.markdown(response.text)
                 st.session_state.chat_history.append({"role": "assistant", "content": response.text})
             except Exception as e:
                 st.error(f"⚠️ AI System Busy: {e}")
 
-# --- 5. نظام التوجيه (Routing) ---
+# --- 5. نظام التوجيه ---
 if not st.session_state.user_email:
     render_auth()
 else:
