@@ -1,38 +1,35 @@
 import streamlit as st
-import google.generativeai as genai
 from supabase import create_client
+from google import genai
 
-# -------------------------
-# Page config
-# -------------------------
+# ---------------------
+# Page setup
+# ---------------------
 st.set_page_config(
     page_title="Industrial Formula AI",
     layout="wide"
 )
 
-# -------------------------
+# ---------------------
 # Secrets
-# -------------------------
+# ---------------------
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 API_KEY = st.secrets["API_KEY"]
 
-# -------------------------
-# Connect Supabase
-# -------------------------
+# ---------------------
+# Supabase
+# ---------------------
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# -------------------------
-# Configure Gemini
-# -------------------------
-genai.configure(api_key=API_KEY)
+# ---------------------
+# Gemini client
+# ---------------------
+client = genai.Client(api_key=API_KEY)
 
-# النموذج الصحيح حالياً
-model = genai.GenerativeModel("gemini-1.5-pro")
-
-# -------------------------
+# ---------------------
 # UI
-# -------------------------
+# ---------------------
 st.title("Industrial Formula AI")
 
 st.write("AI system for generating industrial product formulations.")
@@ -53,13 +50,13 @@ requirements = st.text_area(
     height=200
 )
 
-# -------------------------
-# Generate Formula
-# -------------------------
+# ---------------------
+# Generate
+# ---------------------
 if st.button("Generate Formula"):
 
     if requirements.strip() == "":
-        st.warning("Please describe the product first.")
+        st.warning("Please describe the product")
     else:
 
         prompt = f"""
@@ -67,7 +64,7 @@ You are a professional chemical engineer.
 
 Create an industrial formulation.
 
-Product type:
+Product:
 {product}
 
 Requirements:
@@ -82,27 +79,26 @@ Return:
 5. Estimated pH
 """
 
-        with st.spinner("Generating formula..."):
+        try:
 
-            try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt
+            )
 
-                response = model.generate_content(prompt)
+            result = response.text
 
-                formula = response.text
+            st.subheader("Generated Formula")
+            st.markdown(result)
 
-                st.subheader("Generated Formula")
+            data = {
+                "product_type": product,
+                "requirements": requirements,
+                "formula": result
+            }
 
-                st.markdown(formula)
+            supabase.table("formulas").insert(data).execute()
 
-                # Save to database
-                data = {
-                    "product_type": product,
-                    "requirements": requirements,
-                    "formula": formula
-                }
-
-                supabase.table("formulas").insert(data).execute()
-
-            except Exception as e:
-                st.error("AI generation error")
-                st.write(e)
+        except Exception as e:
+            st.error("AI generation error")
+            st.write(e)
