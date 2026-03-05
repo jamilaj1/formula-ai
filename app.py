@@ -1,9 +1,9 @@
 import streamlit as st
 from google import genai
 
-# -----------------------
+# ---------------------------
 # PAGE CONFIG
-# -----------------------
+# ---------------------------
 
 st.set_page_config(
     page_title="Formula AI",
@@ -11,15 +11,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# -----------------------
+# ---------------------------
 # STYLE
-# -----------------------
+# ---------------------------
 
 st.markdown("""
 <style>
 
 .stApp{
-background-color:#0f0f0f;
+background:#0f0f0f;
 color:white;
 }
 
@@ -49,38 +49,53 @@ background:#2a2a2a;
 padding:14px;
 border-radius:12px;
 margin-bottom:15px;
-font-size:16px;
 }
 
 .ai-msg{
 background:#1b1b1b;
-padding:18px;
+padding:20px;
 border-radius:12px;
 margin-bottom:20px;
-line-height:1.7;
-font-size:16px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+background:#262626;
+padding:10px;
+text-align:left;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #2a2a2a;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------
+# ---------------------------
 # GEMINI
-# -----------------------
+# ---------------------------
 
 API_KEY = st.secrets["API_KEY"]
+
 client = genai.Client(api_key=API_KEY)
 
-# -----------------------
+# ---------------------------
 # SESSION
-# -----------------------
+# ---------------------------
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# -----------------------
+# ---------------------------
 # SIDEBAR
-# -----------------------
+# ---------------------------
 
 with st.sidebar:
 
@@ -98,16 +113,16 @@ with st.sidebar:
     st.write("Laundry powder")
     st.write("Liquid detergent")
 
-# -----------------------
+# ---------------------------
 # HEADER
-# -----------------------
+# ---------------------------
 
 st.markdown('<div class="chat-title">Formula AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="chat-sub">AI specialized in industrial chemical formulations</div>', unsafe_allow_html=True)
 
-# -----------------------
+# ---------------------------
 # CHAT HISTORY
-# -----------------------
+# ---------------------------
 
 for msg in st.session_state.messages:
 
@@ -117,9 +132,9 @@ for msg in st.session_state.messages:
     else:
         st.markdown(f'<div class="ai-msg">{msg["content"]}</div>', unsafe_allow_html=True)
 
-# -----------------------
+# ---------------------------
 # INPUT
-# -----------------------
+# ---------------------------
 
 prompt = st.chat_input("Describe the product you want to formulate...")
 
@@ -137,23 +152,28 @@ if prompt:
         ai_prompt = f"""
 You are a professional industrial chemist.
 
-Create a clear industrial formulation.
+Create a professional industrial formulation.
 
 Product:
 {prompt}
 
-Return in this format:
+Return response EXACTLY in this format.
 
-FORMULA
-- ingredient – percentage – function
+### FORMULA
 
-MANUFACTURING
-Step 1
-Step 2
-Step 3
+| Ingredient | Percentage | Function |
+|-----------|-----------|-----------|
+| example | 10% | surfactant |
 
-PH
-Recommended pH
+### MANUFACTURING STEPS
+
+1. Step one
+2. Step two
+3. Step three
+
+### pH
+
+Recommended pH range and explanation.
 """
 
         response = client.models.generate_content(
