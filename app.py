@@ -79,7 +79,7 @@ border-bottom:1px solid #2a2a2a;
 """, unsafe_allow_html=True)
 
 # ---------------------------
-# GEMINI
+# GEMINI API
 # ---------------------------
 
 API_KEY = st.secrets["API_KEY"]
@@ -121,7 +121,7 @@ st.markdown('<div class="chat-title">Formula AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="chat-sub">AI specialized in industrial chemical formulations</div>', unsafe_allow_html=True)
 
 # ---------------------------
-# CHAT HISTORY
+# SHOW CHAT
 # ---------------------------
 
 for msg in st.session_state.messages:
@@ -152,28 +152,36 @@ if prompt:
         ai_prompt = f"""
 You are a professional industrial chemist.
 
-Create a professional industrial formulation.
-
-Product:
+User request:
 {prompt}
 
-Return response EXACTLY in this format.
+IMPORTANT RULES:
+
+1. The FORMULA table must ALWAYS be in English.
+2. Ingredient names must ALWAYS be in English.
+3. Table headers must be:
+Ingredient | Percentage | Function
+
+4. All explanations, manufacturing steps, and comments must be written in the SAME LANGUAGE as the user request.
+
+Example:
+If the user writes Arabic → explanations Arabic.
+If the user writes English → explanations English.
+
+Return format:
 
 ### FORMULA
 
 | Ingredient | Percentage | Function |
 |-----------|-----------|-----------|
-| example | 10% | surfactant |
 
 ### MANUFACTURING STEPS
 
-1. Step one
-2. Step two
-3. Step three
+Explain steps.
 
 ### pH
 
-Recommended pH range and explanation.
+Explain recommended pH.
 """
 
         response = client.models.generate_content(
