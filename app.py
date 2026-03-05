@@ -1,9 +1,9 @@
 import streamlit as st
 from google import genai
 
-# ---------------------------
-# Configuration
-# ---------------------------
+# ----------------------------
+# Page config
+# ----------------------------
 
 st.set_page_config(
     page_title="Industrial Formula AI",
@@ -14,33 +14,33 @@ st.set_page_config(
 st.title("Industrial Formula AI")
 st.write("AI system for generating industrial product formulations.")
 
-# ---------------------------
-# Load API Key
-# ---------------------------
+# ----------------------------
+# Load API key
+# ----------------------------
 
 try:
     API_KEY = st.secrets["API_KEY"]
 except:
-    st.error("API key not found. Please add it in Streamlit Secrets.")
+    st.error("API key not found. Add it in Streamlit Secrets.")
     st.stop()
 
-# ---------------------------
-# Initialize Gemini Client
-# ---------------------------
+# ----------------------------
+# Gemini client
+# ----------------------------
 
 client = genai.Client(api_key=API_KEY)
 
-# ---------------------------
-# Product Selection
-# ---------------------------
+# ----------------------------
+# UI
+# ----------------------------
 
 product_type = st.selectbox(
     "Product Type",
     [
         "Detergent",
+        "Dishwashing Liquid",
         "Shampoo",
         "Liquid Soap",
-        "Dishwashing Liquid",
         "Fabric Softener",
         "Industrial Cleaner"
     ]
@@ -48,39 +48,39 @@ product_type = st.selectbox(
 
 description = st.text_area(
     "Describe your product",
-    height=200,
-    placeholder="Example:\nHigh foam dishwashing liquid\nLemon fragrance\nStrong grease removal\nSkin friendly"
+    height=200
 )
 
 generate = st.button("Generate Formula")
 
-# ---------------------------
-# AI Generation
-# ---------------------------
+# ----------------------------
+# AI generation
+# ----------------------------
 
 if generate:
 
     if description.strip() == "":
-        st.warning("Please describe your product first.")
+        st.warning("Please write product description")
         st.stop()
 
     prompt = f"""
-You are an industrial chemist.
+You are an expert industrial chemist.
 
-Create a professional formulation for this product.
+Create a professional formulation for the following product.
 
-Product type:
+Product Type:
 {product_type}
 
-Product description:
+Description:
 {description}
 
 Provide:
 
-1. Ingredient list
+1. Raw materials
 2. Percentage of each ingredient
 3. Function of each ingredient
-4. Basic manufacturing steps
+4. Manufacturing steps
+5. Notes for stability and pH
 """
 
     try:
@@ -88,7 +88,7 @@ Provide:
         with st.spinner("Generating formulation..."):
 
             response = client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-2.5-flash",
                 contents=prompt
             )
 
