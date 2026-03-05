@@ -1,37 +1,74 @@
+# app.py
+
 import streamlit as st
 import google.generativeai as genai
 from supabase import create_client
 
-st.set_page_config(page_title="Formula AI", layout="wide")
+# -----------------------------
+# Page config
+# -----------------------------
+st.set_page_config(
+    page_title="Industrial Formula AI",
+    layout="wide"
+)
 
-# secrets
+# -----------------------------
+# Secrets
+# -----------------------------
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 API_KEY = st.secrets["API_KEY"]
 
-# connect supabase
+# -----------------------------
+# Supabase connection
+# -----------------------------
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# connect gemini
+# -----------------------------
+# Gemini configuration
+# -----------------------------
 genai.configure(api_key=API_KEY)
 
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash"
+)
 
+# -----------------------------
+# UI
+# -----------------------------
 st.title("Industrial Formula AI")
+
+st.write("AI system for generating industrial product formulations.")
 
 product = st.selectbox(
     "Product Type",
-    ["Detergent", "Shampoo", "Paint", "Adhesive", "Cosmetics"]
+    [
+        "Detergent",
+        "Shampoo",
+        "Paint",
+        "Adhesive",
+        "Cosmetics"
+    ]
 )
 
-requirements = st.text_area("Describe your product")
+requirements = st.text_area(
+    "Describe your product",
+    height=200
+)
 
+# -----------------------------
+# Generate button
+# -----------------------------
 if st.button("Generate Formula"):
 
-    prompt = f"""
+    if requirements.strip() == "":
+        st.warning("Please describe the product first.")
+    else:
+
+        prompt = f"""
 You are a senior chemical engineer.
 
-Generate an industrial formulation.
+Generate a professional industrial formulation.
 
 Product type:
 {product}
@@ -39,16 +76,38 @@ Product type:
 Requirements:
 {requirements}
 
-Return:
+Return the answer in this structure:
 
-1. Ingredients
-2. Percentages
-3. Manufacturing Process
-4. Safety Notes
+1. Ingredients list
+2. Percentage of each ingredient
+3. Manufacturing process
+4. Safety notes
+5. Estimated pH
 """
 
-    response = model.generate_content(prompt)
+        with st.spinner("Generating formula..."):
 
-    st.subheader("Generated Formula")
+            try:
 
-    st.markdown(response.text)
+                response = model.generate_content(prompt)
+
+                result = response.text
+
+                st.subheader("Generated Formula")
+
+                st.markdown(result)
+
+                # -----------------------------
+                # Save to Supabase
+                # -----------------------------
+                data = {
+                    "product_type": product,
+                    "requirements": requirements,
+                    "formula": result
+                }
+
+                supabase.table("formulas").insert(data).execute()
+
+            except Exception as e:
+                st.error("AI generation error")
+                st.exception(e)
