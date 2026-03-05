@@ -61,7 +61,7 @@ margin-bottom:20px;
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
+margin-top:15px;
 }
 
 th{
@@ -79,7 +79,7 @@ border-bottom:1px solid #2a2a2a;
 """, unsafe_allow_html=True)
 
 # ---------------------------
-# GEMINI API
+# GEMINI
 # ---------------------------
 
 API_KEY = st.secrets["API_KEY"]
@@ -112,6 +112,8 @@ with st.sidebar:
     st.write("Dishwashing liquid")
     st.write("Laundry powder")
     st.write("Liquid detergent")
+    st.write("Hand soap")
+    st.write("Shampoo")
 
 # ---------------------------
 # HEADER
@@ -147,28 +149,27 @@ if prompt:
 
     st.markdown(f'<div class="user-msg">{prompt}</div>', unsafe_allow_html=True)
 
-    with st.spinner("Designing formula..."):
+    with st.spinner("Designing industrial formula..."):
 
         ai_prompt = f"""
-You are a professional industrial chemist.
+You are an industrial formulation chemist.
 
 User request:
 {prompt}
 
-IMPORTANT RULES:
+RULES:
 
-1. The FORMULA table must ALWAYS be in English.
-2. Ingredient names must ALWAYS be in English.
-3. Table headers must be:
-Ingredient | Percentage | Function
+1. Ingredient names MUST always be in English.
+2. Formula table MUST always be in English.
+3. Explanations must be in the SAME language used by the user.
 
-4. All explanations, manufacturing steps, and comments must be written in the SAME LANGUAGE as the user request.
+Return result using this format.
 
-Example:
-If the user writes Arabic → explanations Arabic.
-If the user writes English → explanations English.
+### PRODUCT TYPE
+Identify product type.
 
-Return format:
+### CONCENTRATION LEVEL
+Economy / Standard / Premium
 
 ### FORMULA
 
@@ -177,11 +178,19 @@ Return format:
 
 ### MANUFACTURING STEPS
 
-Explain steps.
+Explain steps clearly.
 
-### pH
+### RECOMMENDED pH
 
-Explain recommended pH.
+Explain ideal pH.
+
+### ESTIMATED COST
+
+Estimate raw material cost per kg.
+
+### SUGGESTED MARKET PRICE
+
+Suggested selling price.
 """
 
         response = client.models.generate_content(
