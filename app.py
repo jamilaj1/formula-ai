@@ -1,9 +1,9 @@
 import streamlit as st
 from google import genai
 
-# ----------------------------------
+# ------------------------------
 # PAGE CONFIG
-# ----------------------------------
+# ------------------------------
 
 st.set_page_config(
     page_title="Formula AI",
@@ -11,49 +11,54 @@ st.set_page_config(
     layout="wide"
 )
 
-# ----------------------------------
-# DARK STYLE (مثل ChatGPT / Gemini)
-# ----------------------------------
+# ------------------------------
+# STYLE (ChatGPT Style)
+# ------------------------------
 
 st.markdown("""
 <style>
 
 .stApp{
-background-color:#131314;
+background-color:#0f0f0f;
 color:white;
 }
 
 [data-testid="stSidebar"]{
-background-color:#1e1f20;
+background-color:#171717;
 }
 
 .chat-title{
-font-size:34px;
+font-size:36px;
 font-weight:700;
-margin-bottom:10px;
+margin-bottom:5px;
+}
+
+.chat-sub{
+color:#9aa0a6;
+margin-bottom:20px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------------------------
+# ------------------------------
 # API KEY
-# ----------------------------------
+# ------------------------------
 
 API_KEY = st.secrets["API_KEY"]
 
 client = genai.Client(api_key=API_KEY)
 
-# ----------------------------------
-# SESSION STATE
-# ----------------------------------
+# ------------------------------
+# SESSION
+# ------------------------------
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# ----------------------------------
+# ------------------------------
 # SIDEBAR
-# ----------------------------------
+# ------------------------------
 
 with st.sidebar:
 
@@ -65,36 +70,36 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown("### Example Prompts")
+    st.markdown("### Examples")
 
-    st.write("• Liquid dishwashing detergent")
-    st.write("• Laundry powder formula")
-    st.write("• Industrial cleaner")
+    st.write("Dishwashing liquid")
+    st.write("Laundry powder")
+    st.write("Liquid detergent")
 
-# ----------------------------------
+# ------------------------------
 # TITLE
-# ----------------------------------
+# ------------------------------
 
 st.markdown('<div class="chat-title">Formula AI</div>', unsafe_allow_html=True)
-st.write("AI system specialized in industrial chemical formulations")
+st.markdown('<div class="chat-sub">AI specialized in industrial chemical formulations</div>', unsafe_allow_html=True)
 
-# ----------------------------------
+# ------------------------------
 # CHAT HISTORY
-# ----------------------------------
+# ------------------------------
 
 for message in st.session_state.messages:
+
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ----------------------------------
-# CHAT INPUT
-# ----------------------------------
+# ------------------------------
+# USER INPUT
+# ------------------------------
 
-prompt = st.chat_input("Ask for a formula...")
+prompt = st.chat_input("Describe the product you want to formulate...")
 
 if prompt:
 
-    # user message
     st.session_state.messages.append({
         "role":"user",
         "content":prompt
@@ -103,30 +108,43 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # AI response
     with st.chat_message("assistant"):
 
         with st.spinner("Designing formula..."):
 
-            full_prompt = f"""
+            ai_prompt = f"""
 You are a professional industrial chemist.
 
-Design a full industrial formulation for:
+Create a CLEAN and SIMPLE formulation.
 
+Product:
 {prompt}
 
-Provide:
+Rules:
+- Do NOT generate large tables
+- Use bullet points
+- Keep it clean and readable
 
-1. Raw materials
-2. Percentage
-3. Function
-4. Manufacturing steps
-5. pH recommendation
+Return in this format:
+
+FORMULA
+
+Ingredient – percentage – function
+
+MANUFACTURING
+
+Step 1
+Step 2
+Step 3
+
+PH
+
+Recommended pH
 """
 
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=full_prompt
+                contents=ai_prompt
             )
 
             answer = response.text
