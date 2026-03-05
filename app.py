@@ -2,115 +2,138 @@ import streamlit as st
 from google import genai
 
 # ----------------------------------
-# Page Configuration
+# PAGE CONFIG
 # ----------------------------------
 
 st.set_page_config(
-    page_title="Industrial Formula AI",
+    page_title="Formula AI",
     page_icon="🧪",
-    layout="centered"
+    layout="wide"
 )
 
-st.title("Industrial Formula AI")
-st.write("AI system for generating industrial product formulations.")
-
 # ----------------------------------
-# Load API Key
+# DARK STYLE (مثل ChatGPT / Gemini)
 # ----------------------------------
 
-try:
-    API_KEY = st.secrets["API_KEY"]
-except:
-    st.error("API key not found. Please add it in Streamlit Secrets.")
-    st.stop()
+st.markdown("""
+<style>
+
+.stApp{
+background-color:#131314;
+color:white;
+}
+
+[data-testid="stSidebar"]{
+background-color:#1e1f20;
+}
+
+.chat-title{
+font-size:34px;
+font-weight:700;
+margin-bottom:10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ----------------------------------
-# Gemini Client
+# API KEY
 # ----------------------------------
+
+API_KEY = st.secrets["API_KEY"]
 
 client = genai.Client(api_key=API_KEY)
 
 # ----------------------------------
-# Product Selection
+# SESSION STATE
 # ----------------------------------
 
-product_type = st.selectbox(
-    "Product Type",
-    [
-        "Detergent",
-        "Dishwashing Liquid",
-        "Shampoo",
-        "Liquid Soap",
-        "Fabric Softener",
-        "Industrial Cleaner"
-    ]
-)
-
-description = st.text_area(
-    "Describe your product",
-    height=200,
-    placeholder="Example:\nHigh foam dishwashing liquid\nLemon fragrance\nStrong grease removal\nSkin friendly"
-)
-
-generate = st.button("Generate Formula")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 # ----------------------------------
-# AI Generation
+# SIDEBAR
 # ----------------------------------
 
-if generate:
+with st.sidebar:
 
-    if description.strip() == "":
-        st.warning("Please describe your product first.")
-        st.stop()
+    st.markdown("## 🧪 Formula AI")
 
-    prompt = f"""
-You are an expert industrial chemist.
+    if st.button("➕ New Chat"):
+        st.session_state.messages = []
+        st.rerun()
 
-Create a professional formulation for the following product.
+    st.markdown("---")
 
-Product type:
-{product_type}
+    st.markdown("### Example Prompts")
 
-Description:
-{description}
+    st.write("• Liquid dishwashing detergent")
+    st.write("• Laundry powder formula")
+    st.write("• Industrial cleaner")
+
+# ----------------------------------
+# TITLE
+# ----------------------------------
+
+st.markdown('<div class="chat-title">Formula AI</div>', unsafe_allow_html=True)
+st.write("AI system specialized in industrial chemical formulations")
+
+# ----------------------------------
+# CHAT HISTORY
+# ----------------------------------
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# ----------------------------------
+# CHAT INPUT
+# ----------------------------------
+
+prompt = st.chat_input("Ask for a formula...")
+
+if prompt:
+
+    # user message
+    st.session_state.messages.append({
+        "role":"user",
+        "content":prompt
+    })
+
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # AI response
+    with st.chat_message("assistant"):
+
+        with st.spinner("Designing formula..."):
+
+            full_prompt = f"""
+You are a professional industrial chemist.
+
+Design a full industrial formulation for:
+
+{prompt}
 
 Provide:
 
 1. Raw materials
-2. Percentage of each ingredient
-3. Function of each ingredient
+2. Percentage
+3. Function
 4. Manufacturing steps
-5. Notes about pH and stability
+5. pH recommendation
 """
-
-    try:
-
-        with st.spinner("Generating formulation..."):
 
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=prompt
+                contents=full_prompt
             )
 
-            result = response.text
+            answer = response.text
 
-        st.success("Formula generated successfully")
+            st.markdown(answer)
 
-        st.markdown("## 🧪 Generated Formula")
-
-        st.markdown(result)
-
-        st.download_button(
-            label="Download Formula",
-            data=result,
-            file_name="formula.txt",
-            mime="text/plain"
-        )
-
-        st.code(result)
-
-    except Exception as e:
-
-        st.error("AI generation error")
-        st.write(e)
+    st.session_state.messages.append({
+        "role":"assistant",
+        "content":answer
+    })
