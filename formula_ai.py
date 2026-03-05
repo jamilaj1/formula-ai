@@ -34,8 +34,8 @@ def init_connections():
     
     # ربط Gemini مع استخدام التعريف الكامل للموديل لحل خطأ 404
     genai.configure(api_key=st.secrets["API_KEY"])
-    # استخدام المسار الكامل للموديل لضمان القبول في واجهة v1beta
-    ai_model = genai.GenerativeModel("models/gemini-1.5-flash")
+    # التصحيح: استدعاء الموديل بدون "models/" أو بمسار صريح حسب النسخة
+    ai_model = genai.GenerativeModel("gemini-1.5-flash")
     return sb_client, ai_model
 
 supabase, model = init_connections()
@@ -95,7 +95,7 @@ def render_main():
         with st.chat_message("assistant"):
             try:
                 # إرسال الطلب للموديل الذي تم إصلاحه
-                response = model.generate_content(f"As a Senior Chemical Engineer, answer: {prompt}")
+                response = model.generate_content(f"As a Senior Chemical Engineer, answer Jamil: {prompt}")
                 st.markdown(response.text)
                 st.session_state.chat_history.append({"role": "assistant", "content": response.text})
             except Exception as e:
