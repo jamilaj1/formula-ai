@@ -1,9 +1,9 @@
 import streamlit as st
 from google import genai
 
-# ------------------------------
+# -----------------------
 # PAGE CONFIG
-# ------------------------------
+# -----------------------
 
 st.set_page_config(
     page_title="Formula AI",
@@ -11,9 +11,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# ------------------------------
+# -----------------------
 # STYLE
-# ------------------------------
+# -----------------------
 
 st.markdown("""
 <style>
@@ -54,6 +54,13 @@ border-radius:14px;
 margin-bottom:25px;
 }
 
+.score-box{
+background:#232426;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+}
+
 table{
 width:100%;
 border-collapse:collapse;
@@ -74,63 +81,70 @@ border-bottom:1px solid rgba(255,255,255,0.06);
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------
+# -----------------------
 # GEMINI API
-# ------------------------------
+# -----------------------
 
 API_KEY = st.secrets["API_KEY"]
 client = genai.Client(api_key=API_KEY)
 
-# ------------------------------
+# -----------------------
 # HEADER
-# ------------------------------
+# -----------------------
 
 st.markdown('<div class="title-gradient">Formula AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">AI Chemical Formulation Platform</div>', unsafe_allow_html=True)
 
-# ------------------------------
+# -----------------------
 # INPUT
-# ------------------------------
+# -----------------------
 
 prompt = st.chat_input("Describe the chemical product you want to formulate...")
 
-# ------------------------------
-# AI RESPONSE
-# ------------------------------
+# -----------------------
+# AI GENERATION
+# -----------------------
 
 if prompt:
 
     with st.spinner("Designing multiple formulations..."):
 
         ai_prompt = f"""
-You are an industrial formulation chemist.
+You are a professional industrial chemist.
 
 User request:
 {prompt}
 
 Create FOUR formulation options:
 
-1 Economy Formula (lowest cost)
-2 Balanced Formula (cost/performance balance)
-3 High Performance Formula (maximum effectiveness)
-4 Premium Formula (highest quality)
+1 Economy Formula
+2 Balanced Formula
+3 High Performance Formula
+4 Premium Formula
 
-Rules:
+Each formula must include:
 
-Ingredient names must be in English.
-
-Return each formula as a Markdown table:
+FORMULA TABLE
 
 | Ingredient | Percentage | Function |
 
-After each formula explain:
+Then include:
 
-Manufacturing steps
-Recommended pH
-Advantages
+Estimated cost per kg
+
+Performance scores from 1 to 10:
+
+Cleaning Power
+Foam
+Stability
+Skin Safety
+Cost Efficiency
+
+Explain advantages of each formula.
 
 Language rule:
-Explanations must be written in the same language as the user request.
+Explanations must use the same language as the user.
+Ingredient names must always be English.
 """
 
         response = client.models.generate_content(
