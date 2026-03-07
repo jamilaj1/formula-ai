@@ -12,25 +12,24 @@ st.set_page_config(
 )
 
 # ------------------------------
-# GEMINI STYLE UI
+# STYLE
 # ------------------------------
 
 st.markdown("""
 <style>
 
 .stApp{
-background-color:#131314;
+background:#131314;
 color:#e3e3e3;
-font-family:system-ui;
 }
 
 .block-container{
-max-width:900px;
+max-width:1000px;
 margin:auto;
 }
 
 [data-testid="stSidebar"]{
-background-color:#1e1f20;
+background:#1e1f20;
 border-right:1px solid rgba(255,255,255,0.08);
 }
 
@@ -48,19 +47,11 @@ color:#b4b4b4;
 margin-bottom:25px;
 }
 
-.user-msg{
-background:#2b2c2e;
-padding:14px;
-border-radius:14px;
-margin-bottom:15px;
-}
-
 .ai-msg{
 background:#1f2022;
 padding:20px;
 border-radius:14px;
-margin-bottom:20px;
-line-height:1.7;
+margin-bottom:25px;
 }
 
 table{
@@ -91,35 +82,6 @@ API_KEY = st.secrets["API_KEY"]
 client = genai.Client(api_key=API_KEY)
 
 # ------------------------------
-# SESSION MEMORY
-# ------------------------------
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# ------------------------------
-# SIDEBAR
-# ------------------------------
-
-with st.sidebar:
-
-    st.markdown("### 🧪 Formula AI")
-
-    if st.button("➕ New Chat"):
-        st.session_state.messages = []
-        st.rerun()
-
-    st.markdown("---")
-
-    st.markdown("#### Example Requests")
-
-    st.write("• Liquid laundry detergent")
-    st.write("• Lemon dishwashing liquid")
-    st.write("• Face cream formulation")
-    st.write("• Acrylic wall paint")
-    st.write("• NPK fertilizer")
-
-# ------------------------------
 # HEADER
 # ------------------------------
 
@@ -127,33 +89,18 @@ st.markdown('<div class="title-gradient">Formula AI</div>', unsafe_allow_html=Tr
 st.markdown('<div class="subtitle">AI Chemical Formulation Platform</div>', unsafe_allow_html=True)
 
 # ------------------------------
-# CHAT HISTORY
-# ------------------------------
-
-for msg in st.session_state.messages:
-
-    if msg["role"] == "user":
-        st.markdown(f'<div class="user-msg">{msg["content"]}</div>', unsafe_allow_html=True)
-
-    else:
-        st.markdown(f'<div class="ai-msg">{msg["content"]}</div>', unsafe_allow_html=True)
-
-# ------------------------------
 # INPUT
 # ------------------------------
 
 prompt = st.chat_input("Describe the chemical product you want to formulate...")
 
+# ------------------------------
+# AI RESPONSE
+# ------------------------------
+
 if prompt:
 
-    st.session_state.messages.append({
-        "role":"user",
-        "content":prompt
-    })
-
-    st.markdown(f'<div class="user-msg">{prompt}</div>', unsafe_allow_html=True)
-
-    with st.spinner("Designing formulation..."):
+    with st.spinner("Designing multiple formulations..."):
 
         ai_prompt = f"""
 You are an industrial formulation chemist.
@@ -161,26 +108,29 @@ You are an industrial formulation chemist.
 User request:
 {prompt}
 
+Create FOUR formulation options:
+
+1 Economy Formula (lowest cost)
+2 Balanced Formula (cost/performance balance)
+3 High Performance Formula (maximum effectiveness)
+4 Premium Formula (highest quality)
+
 Rules:
 
-- Ingredient names must be in English
-- Formula must be returned as a Markdown table
+Ingredient names must be in English.
 
-Format:
-
-### FORMULA
+Return each formula as a Markdown table:
 
 | Ingredient | Percentage | Function |
-|-----------|-----------|-----------|
 
-### MANUFACTURING STEPS
-Explain clearly.
+After each formula explain:
 
-### pH
-Recommended pH.
+Manufacturing steps
+Recommended pH
+Advantages
 
 Language rule:
-Explanation language must match the user language.
+Explanations must be written in the same language as the user request.
 """
 
         response = client.models.generate_content(
@@ -188,11 +138,6 @@ Explanation language must match the user language.
             contents=ai_prompt
         )
 
-        answer = response.text
+        result = response.text
 
-    st.markdown(f'<div class="ai-msg">{answer}</div>', unsafe_allow_html=True)
-
-    st.session_state.messages.append({
-        "role":"assistant",
-        "content":answer
-    })
+    st.markdown(f'<div class="ai-msg">{result}</div>', unsafe_allow_html=True)
