@@ -1,9 +1,9 @@
 import streamlit as st
 from google import genai
 
-# ---------------------------
+# ------------------------------
 # PAGE CONFIG
-# ---------------------------
+# ------------------------------
 
 st.set_page_config(
     page_title="Formula AI",
@@ -11,16 +11,17 @@ st.set_page_config(
     layout="wide"
 )
 
-# ---------------------------
-# STYLE
-# ---------------------------
+# ------------------------------
+# GEMINI STYLE UI
+# ------------------------------
 
 st.markdown("""
 <style>
 
 .stApp{
-background:#0f0f0f;
-color:white;
+background-color:#131314;
+color:#e3e3e3;
+font-family:system-ui;
 }
 
 .block-container{
@@ -29,77 +30,80 @@ margin:auto;
 }
 
 [data-testid="stSidebar"]{
-background:#171717;
-border-right:1px solid #2a2a2a;
+background-color:#1e1f20;
+border-right:1px solid rgba(255,255,255,0.08);
 }
 
-.chat-title{
-font-size:36px;
+.title-gradient{
+font-size:40px;
 font-weight:700;
+background:linear-gradient(90deg,#4285f4,#9b72cb,#d96570);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
 margin-bottom:5px;
 }
 
-.chat-sub{
-color:#9aa0a6;
-margin-bottom:30px;
+.subtitle{
+color:#b4b4b4;
+margin-bottom:25px;
 }
 
 .user-msg{
-background:#2a2a2a;
+background:#2b2c2e;
 padding:14px;
-border-radius:12px;
+border-radius:14px;
 margin-bottom:15px;
 }
 
 .ai-msg{
-background:#1b1b1b;
+background:#1f2022;
 padding:20px;
-border-radius:12px;
+border-radius:14px;
 margin-bottom:20px;
+line-height:1.7;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:15px;
+margin-top:10px;
 }
 
 th{
-background:#262626;
+background:#2a2b2e;
 padding:10px;
 text-align:left;
 }
 
 td{
 padding:10px;
-border-bottom:1px solid #2a2a2a;
+border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------
-# GEMINI
-# ---------------------------
+# ------------------------------
+# GEMINI API
+# ------------------------------
 
 API_KEY = st.secrets["API_KEY"]
-
 client = genai.Client(api_key=API_KEY)
 
-# ---------------------------
-# SESSION
-# ---------------------------
+# ------------------------------
+# SESSION MEMORY
+# ------------------------------
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# ---------------------------
+# ------------------------------
 # SIDEBAR
-# ---------------------------
+# ------------------------------
 
 with st.sidebar:
 
-    st.markdown("## 🧪 Formula AI")
+    st.markdown("### 🧪 Formula AI")
 
     if st.button("➕ New Chat"):
         st.session_state.messages = []
@@ -107,24 +111,24 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown("### Examples")
+    st.markdown("#### Example Requests")
 
-    st.write("Dishwashing liquid")
-    st.write("Laundry powder")
-    st.write("Liquid detergent")
-    st.write("Hand soap")
-    st.write("Shampoo")
+    st.write("• Liquid laundry detergent")
+    st.write("• Lemon dishwashing liquid")
+    st.write("• Face cream formulation")
+    st.write("• Acrylic wall paint")
+    st.write("• NPK fertilizer")
 
-# ---------------------------
+# ------------------------------
 # HEADER
-# ---------------------------
+# ------------------------------
 
-st.markdown('<div class="chat-title">Formula AI</div>', unsafe_allow_html=True)
-st.markdown('<div class="chat-sub">AI specialized in industrial chemical formulations</div>', unsafe_allow_html=True)
+st.markdown('<div class="title-gradient">Formula AI</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI Chemical Formulation Platform</div>', unsafe_allow_html=True)
 
-# ---------------------------
-# SHOW CHAT
-# ---------------------------
+# ------------------------------
+# CHAT HISTORY
+# ------------------------------
 
 for msg in st.session_state.messages:
 
@@ -134,11 +138,11 @@ for msg in st.session_state.messages:
     else:
         st.markdown(f'<div class="ai-msg">{msg["content"]}</div>', unsafe_allow_html=True)
 
-# ---------------------------
+# ------------------------------
 # INPUT
-# ---------------------------
+# ------------------------------
 
-prompt = st.chat_input("Describe the product you want to formulate...")
+prompt = st.chat_input("Describe the chemical product you want to formulate...")
 
 if prompt:
 
@@ -149,7 +153,7 @@ if prompt:
 
     st.markdown(f'<div class="user-msg">{prompt}</div>', unsafe_allow_html=True)
 
-    with st.spinner("Designing industrial formula..."):
+    with st.spinner("Designing formulation..."):
 
         ai_prompt = f"""
 You are an industrial formulation chemist.
@@ -157,19 +161,12 @@ You are an industrial formulation chemist.
 User request:
 {prompt}
 
-RULES:
+Rules:
 
-1. Ingredient names MUST always be in English.
-2. Formula table MUST always be in English.
-3. Explanations must be in the SAME language used by the user.
+- Ingredient names must be in English
+- Formula must be returned as a Markdown table
 
-Return result using this format.
-
-### PRODUCT TYPE
-Identify product type.
-
-### CONCENTRATION LEVEL
-Economy / Standard / Premium
+Format:
 
 ### FORMULA
 
@@ -177,20 +174,13 @@ Economy / Standard / Premium
 |-----------|-----------|-----------|
 
 ### MANUFACTURING STEPS
+Explain clearly.
 
-Explain steps clearly.
+### pH
+Recommended pH.
 
-### RECOMMENDED pH
-
-Explain ideal pH.
-
-### ESTIMATED COST
-
-Estimate raw material cost per kg.
-
-### SUGGESTED MARKET PRICE
-
-Suggested selling price.
+Language rule:
+Explanation language must match the user language.
 """
 
         response = client.models.generate_content(
