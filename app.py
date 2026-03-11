@@ -1,157 +1,110 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 
-# -----------------------
-# PAGE CONFIG
-# -----------------------
+# --- 1. Page Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
+st.set_page_config(page_title="Formula AI Global", page_icon="🌍")
 
-st.set_page_config(
-    page_title="Formula AI",
-    page_icon="🧪",
-    layout="wide"
-)
-
-# -----------------------
-# STYLE
-# -----------------------
-
-st.markdown("""
-<style>
-
-.stApp{
-background:#131314;
-color:#e3e3e3;
+# --- 2. User Authentication System ---
+USERS = {
+    "admin": "formula2026",
+    "jamil": "ghana2026"
 }
 
-.block-container{
-max-width:1000px;
-margin:auto;
-}
+def check_password():
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
 
-[data-testid="stSidebar"]{
-background:#1e1f20;
-border-right:1px solid rgba(255,255,255,0.08);
-}
+    if not st.session_state.authenticated:
+        st.title("🌐 Formula AI Global")
+        st.write("Login to access the world's advanced chemical agent.")
+        
+        user = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        
+        if st.button("Login"):
+            if user in USERS and USERS[user] == password:
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("❌ Incorrect credentials. Please try again.")
+        return False
+    return True
 
-.title-gradient{
-font-size:40px;
-font-weight:700;
-background:linear-gradient(90deg,#4285f4,#9b72cb,#d96570);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-margin-bottom:5px;
-}
+if check_password():
+    # --- 3. Sidebar Configuration ---
+    with st.sidebar:
+        st.title("🌍 Global Control")
+        if st.button("New Session 🧹", use_container_width=True):
+            # Clear both visual messages and the internal Gemini memory
+            st.session_state.messages = []
+            if "chat_session" in st.session_state:
+                del st.session_state.chat_session
+            st.rerun()
+            
+        if st.button("Logout 🚪", use_container_width=True):
+            st.session_state.authenticated = False
+            st.rerun()
 
-.subtitle{
-color:#b4b4b4;
-margin-bottom:25px;
-}
-
-.ai-msg{
-background:#1f2022;
-padding:20px;
-border-radius:14px;
-margin-bottom:25px;
-}
-
-.score-box{
-background:#232426;
-padding:15px;
-border-radius:12px;
-margin-top:10px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-}
-
-th{
-background:#2a2b2e;
-padding:10px;
-text-align:left;
-}
-
-td{
-padding:10px;
-border-bottom:1px solid rgba(255,255,255,0.06);
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# -----------------------
-# GEMINI API
-# -----------------------
-
-API_KEY = st.secrets["API_KEY"]
-client = genai.Client(api_key=API_KEY)
-
-# -----------------------
-# HEADER
-# -----------------------
-
-st.markdown('<div class="title-gradient">Formula AI</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">AI Chemical Formulation Platform</div>', unsafe_allow_html=True)
-
-# -----------------------
-# INPUT
-# -----------------------
-
-prompt = st.chat_input("Describe the chemical product you want to formulate...")
-
-# -----------------------
-# AI GENERATION
-# -----------------------
-
-if prompt:
-
-    with st.spinner("Designing multiple formulations..."):
-
-        ai_prompt = f"""
-You are a professional industrial chemist.
-
-User request:
-{prompt}
-
-Create FOUR formulation options:
-
-1 Economy Formula
-2 Balanced Formula
-3 High Performance Formula
-4 Premium Formula
-
-Each formula must include:
-
-FORMULA TABLE
-
-| Ingredient | Percentage | Function |
-
-Then include:
-
-Estimated cost per kg
-
-Performance scores from 1 to 10:
-
-Cleaning Power
-Foam
-Stability
-Skin Safety
-Cost Efficiency
-
-Explain advantages of each formula.
-
-Language rule:
-Explanations must use the same language as the user.
-Ingredient names must always be English.
-"""
-
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=ai_prompt
+    # --- 4. AI Initialization (Multilingual) ---
+    # WARNING: Replace with your NEW API key. Never share it publicly.
+    MY_API_KEY = "YOUR_NEW_API_KEY_HERE" 
+    
+    @st.cache_resource
+    def load_global_model(api_key):
+        genai.configure(api_key=api_key)
+        
+        global_instructions = """
+        You are 'Formula AI', a global expert in Applied Chemistry.
+        
+        MULTILINGUAL RULES:
+        1. Detect the user's language automatically and respond in the SAME language.
+        2. TECHNICAL DATA: Always keep chemical names, formulas, and tables in Professional English to ensure global standards.
+        3. EXPLANATIONS: Provide instructions and safety notes in the user's native language.
+        
+        STRICT PROTOCOL:
+        - First response must ALWAYS ask for: 1) Industry Sector, 2) Objective, 3) Mode (A-F).
+        - Do not provide formulas until these are defined.
+        """
+        # Explicitly selecting a highly capable model for text/chat
+        return genai.GenerativeModel(
+            model_name="gemini-1.5-flash", 
+            system_instruction=global_instructions
         )
 
-        result = response.text
+    try:
+        model = load_global_model(MY_API_KEY)
+    except Exception as e:
+        st.error(f"Configuration Error: Please check your API key. Details: {e}")
+        st.stop()
 
-    st.markdown(f'<div class="ai-msg">{result}</div>', unsafe_allow_html=True)
+    # --- 5. Chat Interface ---
+    st.title("🧪 Formula AI Global Agent")
+    st.info("I support all languages. Start by describing your project.")
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    if "chat_session" not in st.session_state:
+        st.session_state.chat_session = model.start_chat(history=[])
+
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Chat input and execution
+    if prompt := st.chat_input("Ask your chemical formulation question here..."):
+        # Append and display user message
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Generate and display assistant response
+        with st.chat_message("assistant"):
+            with st.spinner("Analyzing formulation parameters..."):
+                try:
+                    response = st.session_state.chat_session.send_message(prompt)
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                except Exception as e:
+                    st.error(f"API Error: Unable to generate response. {e}")
