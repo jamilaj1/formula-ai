@@ -1,72 +1,157 @@
 import streamlit as st
-import pandas as pd
 from google import genai
-from cost_engine import calculate_formula_cost
+
+# -----------------------
+# PAGE CONFIG
+# -----------------------
 
 st.set_page_config(
-    page_title="Formula AI Studio",
+    page_title="Formula AI",
     page_icon="🧪",
     layout="wide"
 )
 
+# -----------------------
+# STYLE
+# -----------------------
+
+st.markdown("""
+<style>
+
+.stApp{
+background:#131314;
+color:#e3e3e3;
+}
+
+.block-container{
+max-width:1000px;
+margin:auto;
+}
+
+[data-testid="stSidebar"]{
+background:#1e1f20;
+border-right:1px solid rgba(255,255,255,0.08);
+}
+
+.title-gradient{
+font-size:40px;
+font-weight:700;
+background:linear-gradient(90deg,#4285f4,#9b72cb,#d96570);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+margin-bottom:5px;
+}
+
+.subtitle{
+color:#b4b4b4;
+margin-bottom:25px;
+}
+
+.ai-msg{
+background:#1f2022;
+padding:20px;
+border-radius:14px;
+margin-bottom:25px;
+}
+
+.score-box{
+background:#232426;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+background:#2a2b2e;
+padding:10px;
+text-align:left;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# -----------------------
+# GEMINI API
+# -----------------------
+
 API_KEY = st.secrets["API_KEY"]
 client = genai.Client(api_key=API_KEY)
 
-st.title("🧪 Formula AI Studio")
+# -----------------------
+# HEADER
+# -----------------------
 
-st.sidebar.header("Formulation Settings")
+st.markdown('<div class="title-gradient">Formula AI</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI Chemical Formulation Platform</div>', unsafe_allow_html=True)
 
-product = st.sidebar.text_input("Product Type")
+# -----------------------
+# INPUT
+# -----------------------
 
-performance = st.sidebar.selectbox(
-    "Performance Level",
-    ["Economy","Balanced","High Performance","Premium"]
-)
+prompt = st.chat_input("Describe the chemical product you want to formulate...")
 
-generate = st.sidebar.button("Generate Formula")
+# -----------------------
+# AI GENERATION
+# -----------------------
 
-if generate:
+if prompt:
 
-    with st.spinner("Designing formulation..."):
+    with st.spinner("Designing multiple formulations..."):
 
-        prompt = f"""
-Create an industrial chemical formulation.
+        ai_prompt = f"""
+You are a professional industrial chemist.
 
-Product:
-{product}
+User request:
+{prompt}
 
-Performance level:
-{performance}
+Create FOUR formulation options:
 
-Return table:
+1 Economy Formula
+2 Balanced Formula
+3 High Performance Formula
+4 Premium Formula
 
-Ingredient | Percentage | Function
+Each formula must include:
+
+FORMULA TABLE
+
+| Ingredient | Percentage | Function |
+
+Then include:
+
+Estimated cost per kg
+
+Performance scores from 1 to 10:
+
+Cleaning Power
+Foam
+Stability
+Skin Safety
+Cost Efficiency
+
+Explain advantages of each formula.
+
+Language rule:
+Explanations must use the same language as the user.
+Ingredient names must always be English.
 """
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=prompt
+            contents=ai_prompt
         )
 
         result = response.text
 
-    st.subheader("Generated Formula")
-
-    st.markdown(result)
-
-    # Example structure for cost calculation
-    formula = [
-        {"ingredient":"SLES","percentage":12},
-        {"ingredient":"CAPB","percentage":5},
-        {"ingredient":"Water","percentage":80}
-    ]
-
-    cost = calculate_formula_cost(formula)
-
-    st.subheader("Estimated Production Cost")
-
-    st.metric("Cost per kg", f"{cost} $")
-
-st.sidebar.markdown("---")
-
-st.sidebar.write("AI Chemical Formulation Platform")
+    st.markdown(f'<div class="ai-msg">{result}</div>', unsafe_allow_html=True)
