@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Documentation & API — Formula AI Global</title>
+  <meta name="description" content="توثيق كامل لواجهة Formula AI API - دمج الذكاء الاصطناعي الكيميائي في تطبيقاتك" />
+  <meta name="theme-color" content="#00ff88" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <style>
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    .docs-sidebar {
+      position: sticky;
+      top: 100px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+    .docs-sidebar h4 {
+      color: var(--text-3);
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      margin: 22px 0 8px;
+      text-transform: uppercase;
+    }
+    .docs-sidebar ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-bottom: 14px;
+    }
+    .docs-sidebar a {
+      display: block;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-2);
+      font-size: 0.92rem;
+      transition: all 0.2s;
+    }
+    .docs-sidebar a:hover {
+      background: var(--bg-card);
+      color: var(--text-1);
+    }
+    .docs-sidebar a.active {
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .code-block {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 16px 0;
+      direction: ltr;
+      text-align: left;
+    }
+    .code-block .keyword { color: #c084fc; }
+    .code-block .string { color: var(--primary); }
+    .code-block .comment { color: var(--text-3); font-style: italic; }
+    .code-block .num { color: var(--gold); }
+    .code-block .fn { color: var(--secondary); }
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-1);
+      border-radius: var(--radius);
+      margin: 16px 0;
+      font-family: 'JetBrains Mono', monospace;
+      direction: ltr;
+    }
+    .method-tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .method-get { background: rgba(0, 212, 255, 0.15); color: var(--secondary); }
+    .method-post { background: rgba(0, 255, 136, 0.15); color: var(--primary); }
+    .method-put { background: rgba(255, 215, 0, 0.15); color: var(--gold); }
+    .method-delete { background: rgba(233, 69, 96, 0.15); color: var(--accent); }
+    .docs-section {
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+    }
+    .docs-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+    }
+    .docs-section h3 {
+      font-size: 1.25rem;
+      margin: 24px 0 12px;
+    }
+    .docs-section p {
+      color: var(--text-2);
+      line-height: 1.9;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 1024px) {
+      .docs-layout { grid-template-columns: 1fr; }
+      .docs-sidebar { position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="./index.html" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+        Formula <span>AI</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="./index.html" data-i18n-ar="الرئيسية">Home</a></li>
+        <li><a href="./search.html" data-i18n-ar="البحث الذكي">Smart Search</a></li>
+        <li><a href="./industries.html" data-i18n-ar="الصناعات">Industries</a></li>
+        <li><a href="./pricing.html" data-i18n-ar="الأسعار">Pricing</a></li>
+        <li><a href="./docs.html" class="active" data-i18n-ar="التوثيق">Documentation</a></li>
+        <li><a href="./about.html" data-i18n-ar="من نحن">About</a></li>
+      </ul>
+      <div class="nav-tools">
+        <button class="icon-btn theme-toggle" aria-label="Toggle theme" title="Toggle theme" data-i18n-attr="title" data-i18n-title-ar="تبديل الوضع">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <div class="lang-dropdown">
+          <button class="icon-btn lang-trigger" aria-label="Language">
+            <span class="flag">🇸🇦</span>
+            <span class="label">AR</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="lang-menu"></div>
+        </div>
+      </div>
+
+      <div class="nav-cta">
+        <a href="./login.html" class="btn btn-ghost" data-i18n-ar="دخول">Sign in</a>
+        <a href="./register.html" class="btn btn-primary" data-i18n-ar="احصل على API key">Get API key</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <section style="padding: 130px 0 40px; position: relative;">
+    <div class="hero-bg">
+      <div class="hero-orb green" style="opacity: 0.25;"></div>
+      <div class="hero-orb blue" style="opacity: 0.25;"></div>
+    </div>
+    <div class="container" style="position: relative; z-index: 2;">
+      <div style="text-align: center; max-width: 760px; margin: 0 auto 40px;">
+        <span class="eyebrow reveal">للمطورين</span>
+        <h1 class="reveal">توثيق <span class="gradient-text">Formula AI API</span></h1>
+        <p class="reveal delay-1" style="color: var(--text-2); font-size: 1.1rem; margin-top: 18px;">
+          ادمج الذكاء الاصطناعي الكيميائي في تطبيقاتك بسطرين من الكود
+        </p>
+      </div>
+
+      <div class="docs-layout reveal">
+        <!-- Sidebar -->
+        <aside class="docs-sidebar">
+          <h4>البدء السريع</h4>
+          <ul>
+            <li><a href="#intro" class="active">نظرة عامة</a></li>
+            <li><a href="#auth">المصادقة</a></li>
+            <li><a href="#installation">التثبيت</a></li>
+          </ul>
+
+          <h4>نقاط النهاية</h4>
+          <ul>
+            <li><a href="#search">بحث الفورمولات</a></li>
+            <li><a href="#formula">تفاصيل فورمولا</a></li>
+            <li><a href="#compliance">فحص الامتثال</a></li>
+            <li><a href="#extract">استخراج من كتاب</a></li>
+            <li><a href="#chemicals">قاعدة المواد</a></li>
+          </ul>
+
+          <h4>المصادر</h4>
+          <ul>
+            <li><a href="#errors">رموز الأخطاء</a></li>
+            <li><a href="#rate">حدود الاستخدام</a></li>
+            <li><a href="#sdk">حزم SDK</a></li>
+          </ul>
+        </aside>
+
+        <!-- Content -->
+        <main>
+          <!-- Intro -->
+          <section class="docs-section" id="intro">
+            <h2>نظرة عامة</h2>
+            <p>
+              Formula AI API يمنحك وصولاً برمجياً لكل قدرات منصتنا - من البحث الذكي عن الفورمولات إلى استخراج المعرفة من الكتب وفحص الامتثال التنظيمي - بأمان وسرعة وسهولة.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 22px 0;">
+              <div class="card" style="padding: 18px; text-align: center;">
+                <div style="color: var(--primary); font-size: 1.6rem; font-weight: 900;">REST</div>
+                <div style="color: var(--text-3); font-size: 0.85rem;">JSON Standard</div>
+              </div>
+              <div class="card" style="padding: 18px; text-align: center;">
+                <div style="color: var(--primary); font-size: 1.6rem; font-weight: 900;">99.9%</div>
+                <div style="color: var(--text-3); font-size: 0.85rem;">Uptime SLA</div>
+              </div>
+              <div class="card" style="padding: 18px; text-align: center;">
+                <div style="color: var(--primary); font-size: 1.6rem; font-weight: 900;">&lt; 200ms</div>
+                <div style="color: var(--text-3); font-size: 0.85rem;">متوسط الزمن</div>
+              </div>
+              <div class="card" style="padding: 18px; text-align: center;">
+                <div style="color: var(--primary); font-size: 1.6rem; font-weight: 900;">v3.0</div>
+                <div style="color: var(--text-3); font-size: 0.85rem;">إصدار حالي</div>
+              </div>
+            </div>
+
+            <p><strong>عنوان API الأساسي:</strong></p>
+            <div class="endpoint">
+              <span class="method-tag method-get">BASE</span>
+              <code>https://api.jamilformula.com/v3</code>
+            </div>
+          </section>
+
+          <!-- Auth -->
+          <section class="docs-section" id="auth">
+            <h2>المصادقة</h2>
+            <p>كل طلبات API تتطلب مفتاح API يُرسل في الـ header. احصل على مفتاحك من لوحة التحكم → الإعدادات → API Keys.</p>
+
+            <div class="code-block">
+<span class="keyword">curl</span> -X GET <span class="string">"https://api.jamilformula.com/v3/formulas/search"</span> \
+  -H <span class="string">"Authorization: Bearer fa_live_sk_..."</span> \
+  -H <span class="string">"Content-Type: application/json"</span>
+            </div>
+
+            <p style="background: rgba(255, 215, 0, 0.08); border: 1px solid rgba(255, 215, 0, 0.3); padding: 14px 18px; border-radius: 10px; color: var(--text-2);">
+              ⚠️ <strong>أمان:</strong> لا تكشف مفتاحك في الكود الأمامي (Frontend). استخدم متغيرات البيئة دائماً.
+            </p>
+          </section>
+
+          <!-- Search Endpoint -->
+          <section class="docs-section" id="search">
+            <h2>بحث الفورمولات</h2>
+            <p>البحث الذكي بالذكاء الاصطناعي عن أي فورمولا كيميائية بلغة طبيعية.</p>
+
+            <div class="endpoint">
+              <span class="method-tag method-post">POST</span>
+              <code>/formulas/search</code>
+            </div>
+
+            <h3>المعطيات (Parameters)</h3>
+            <table class="formula-table">
+              <thead>
+                <tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>query</code></td><td>string</td><td>اسم المنتج المراد البحث عنه</td></tr>
+                <tr><td><code>category</code></td><td>string</td><td>الفئة (cosmetics, detergents, ...)</td></tr>
+                <tr><td><code>country</code></td><td>string</td><td>كود الدولة لفحص الامتثال (ISO-2)</td></tr>
+                <tr><td><code>language</code></td><td>string</td><td>لغة الرد (ar, en, fr, ...)</td></tr>
+              </tbody>
+            </table>
+
+            <h3>مثال طلب</h3>
+            <div class="code-block">
+<span class="comment">// JavaScript / Node.js</span>
+<span class="keyword">const</span> response = <span class="keyword">await</span> <span class="fn">fetch</span>(<span class="string">'https://api.jamilformula.com/v3/formulas/search'</span>, {
+  method: <span class="string">'POST'</span>,
+  headers: {
+    <span class="string">'Authorization'</span>: <span class="string">'Bearer '</span> + process.env.<span class="num">FORMULA_AI_KEY</span>,
+    <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
+  },
+  body: <span class="fn">JSON.stringify</span>({
+    query: <span class="string">'natural shampoo for dry hair'</span>,
+    category: <span class="string">'cosmetics'</span>,
+    country: <span class="string">'SA'</span>,
+    language: <span class="string">'ar'</span>
+  })
+});
+
+<span class="keyword">const</span> data = <span class="keyword">await</span> response.<span class="fn">json</span>();
+<span class="fn">console.log</span>(data.formulas);
+            </div>
+
+            <h3>مثال رد</h3>
+            <div class="code-block">
+{
+  <span class="string">"id"</span>: <span class="string">"FA-2026-04891"</span>,
+  <span class="string">"name"</span>: <span class="string">"شامبو طبيعي للشعر الجاف"</span>,
+  <span class="string">"category"</span>: <span class="string">"cosmetics"</span>,
+  <span class="string">"confidence"</span>: <span class="num">0.96</span>,
+  <span class="string">"components"</span>: [
+    {
+      <span class="string">"name"</span>: <span class="string">"Sodium Laureth Sulfate"</span>,
+      <span class="string">"cas"</span>: <span class="string">"68585-34-2"</span>,
+      <span class="string">"percentage"</span>: <span class="num">14.0</span>,
+      <span class="string">"function"</span>: <span class="string">"Primary Surfactant"</span>
+    },
+    <span class="comment">// ... 8 more components</span>
+  ],
+  <span class="string">"compliance"</span>: { <span class="string">"SA"</span>: <span class="keyword">true</span>, <span class="string">"EU"</span>: <span class="keyword">true</span> }
+}
+            </div>
+          </section>
+
+          <!-- Compliance -->
+          <section class="docs-section" id="compliance">
+            <h2>فحص الامتثال التنظيمي</h2>
+            <p>تحقق من توافق فورمولا مع لوائح أي دولة في العالم.</p>
+
+            <div class="endpoint">
+              <span class="method-tag method-post">POST</span>
+              <code>/compliance/check</code>
+            </div>
+
+            <div class="code-block">
+<span class="comment"># Python</span>
+<span class="keyword">import</span> requests
+
+response = requests.<span class="fn">post</span>(
+  <span class="string">'https://api.jamilformula.com/v3/compliance/check'</span>,
+  headers={<span class="string">'Authorization'</span>: <span class="fn">f</span><span class="string">'Bearer {os.environ["FORMULA_AI_KEY"]}'</span>},
+  json={
+    <span class="string">'formula_id'</span>: <span class="string">'FA-2026-04891'</span>,
+    <span class="string">'countries'</span>: [<span class="string">'SA'</span>, <span class="string">'AE'</span>, <span class="string">'EG'</span>, <span class="string">'EU'</span>, <span class="string">'US'</span>]
+  }
+)
+result = response.<span class="fn">json</span>()
+<span class="fn">print</span>(<span class="fn">f</span><span class="string">"Compliant in {result['compliant_countries']} of {result['total']} countries"</span>)
+            </div>
+          </section>
+
+          <!-- Extract -->
+          <section class="docs-section" id="extract">
+            <h2>استخراج من كتاب</h2>
+            <p>ارفع كتاباً واستخرج الفورمولات منه برمجياً.</p>
+
+            <div class="endpoint">
+              <span class="method-tag method-post">POST</span>
+              <code>/books/extract</code>
+            </div>
+
+            <div class="code-block">
+<span class="comment"># Upload book and extract formulas</span>
+<span class="keyword">curl</span> -X POST <span class="string">"https://api.jamilformula.com/v3/books/extract"</span> \
+  -H <span class="string">"Authorization: Bearer fa_live_sk_..."</span> \
+  -F <span class="string">"file=@./CosmeticFormulary.pdf"</span> \
+  -F <span class="string">"language=auto"</span> \
+  -F <span class="string">"complete_missing=true"</span>
+            </div>
+          </section>
+
+          <!-- SDK -->
+          <section class="docs-section" id="sdk">
+            <h2>حزم SDK الرسمية</h2>
+            <p>استخدم حزمنا الرسمية للحصول على دعم أفضل ومعالجة تلقائية للأخطاء.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 22px 0;">
+              <div class="card" style="padding: 22px;">
+                <div style="font-size: 1.8rem; margin-bottom: 8px;">⚡</div>
+                <h4>Node.js / TypeScript</h4>
+                <code style="display: block; background: var(--bg-1); padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 0.85rem; direction: ltr; text-align: left;">npm install @formula-ai/sdk</code>
+              </div>
+              <div class="card" style="padding: 22px;">
+                <div style="font-size: 1.8rem; margin-bottom: 8px;">🐍</div>
+                <h4>Python</h4>
+                <code style="display: block; background: var(--bg-1); padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 0.85rem; direction: ltr; text-align: left;">pip install formula-ai</code>
+              </div>
+              <div class="card" style="padding: 22px;">
+                <div style="font-size: 1.8rem; margin-bottom: 8px;">🐹</div>
+                <h4>Go</h4>
+                <code style="display: block; background: var(--bg-1); padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 0.85rem; direction: ltr; text-align: left;">go get github.com/formula-ai/go</code>
+              </div>
+              <div class="card" style="padding: 22px;">
+                <div style="font-size: 1.8rem; margin-bottom: 8px;">☕</div>
+                <h4>Java / Kotlin</h4>
+                <code style="display: block; background: var(--bg-1); padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 0.85rem; direction: ltr; text-align: left;">implementation 'ai.formula:sdk:3.0'</code>
+              </div>
+            </div>
+          </section>
+
+          <!-- Rate -->
+          <section class="docs-section" id="rate">
+            <h2>حدود الاستخدام</h2>
+            <p>الحدود حسب خطتك:</p>
+            <table class="formula-table" style="margin-top: 14px;">
+              <thead>
+                <tr><th>الخطة</th><th>طلبات/يوم</th><th>طلبات/دقيقة</th><th>الزمن الأقصى</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Free</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>Professional</td><td>1,000</td><td>30</td><td>30s</td></tr>
+                <tr><td>Business</td><td>50,000</td><td>200</td><td>60s</td></tr>
+                <tr><td>Enterprise</td><td>غير محدود</td><td>1,000</td><td>120s</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- Errors -->
+          <section class="docs-section" id="errors">
+            <h2>رموز الأخطاء</h2>
+            <table class="formula-table">
+              <thead>
+                <tr><th>الكود</th><th>الوصف</th><th>الحل</th></tr>
+              </thead>
+              <tbody>
+                <tr><td style="color: var(--gold);"><code>401</code></td><td>غير مصادق</td><td>تحقق من API key</td></tr>
+                <tr><td style="color: var(--gold);"><code>403</code></td><td>الخطة لا تسمح</td><td>قم بترقية الخطة</td></tr>
+                <tr><td style="color: var(--gold);"><code>429</code></td><td>تجاوز الحد</td><td>انتظر دقيقة وحاول</td></tr>
+                <tr><td style="color: var(--accent);"><code>500</code></td><td>خطأ في الخادم</td><td>تواصل مع الدعم</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="padding-top: 0; border-top: none;">
+        <div>© <span data-year>2026</span> Formula AI Global. كل الحقوق محفوظة.</div>
+        <div style="display: flex; gap: 18px;"><a href="#">الخصوصية</a><a href="#">الشروط</a><a href="./about.html">من نحن</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./assets/app.js?v=3"></script>
+  <script>
+    // Smooth-scroll active section in sidebar
+    const links = document.querySelectorAll('.docs-sidebar a');
+    const sections = document.querySelectorAll('.docs-section');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.remove('active'));
+          const id = e.target.id;
+          const link = document.querySelector('.docs-sidebar a[href="#'+id+'"]');
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-100px 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+  </script>
+</body>
+</html>

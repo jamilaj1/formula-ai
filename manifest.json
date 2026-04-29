@@ -1,0 +1,22 @@
+{
+  "name": "Formula AI Global - منصة الفورمولات الكيميائية العالمية",
+  "short_name": "Formula AI",
+  "description": "أول منصة ذكاء اصطناعي كيميائي عالمية تغطي 200,000+ فورمولا و40 صناعة في 195 دولة",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050818",
+  "theme_color": "#00ff88",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "education"]
+}

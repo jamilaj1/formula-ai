@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Create account — Formula AI Global</title>
+  <meta name="description" content="Join Formula AI Global — the world's first AI chemical formulation platform" />
+  <meta name="theme-color" content="#00ff88" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="./index.html" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+        Formula <span>AI</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="./index.html" data-i18n-ar="الرئيسية">Home</a></li>
+        <li><a href="./search.html" data-i18n-ar="البحث الذكي">Smart Search</a></li>
+        <li><a href="./pricing.html" data-i18n-ar="الأسعار">Pricing</a></li>
+        <li><a href="./about.html" data-i18n-ar="من نحن">About</a></li>
+      </ul>
+      <div class="nav-tools">
+        <button class="icon-btn theme-toggle" aria-label="Toggle theme" title="Toggle theme" data-i18n-attr="title" data-i18n-title-ar="تبديل الوضع">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <div class="lang-dropdown">
+          <button class="icon-btn lang-trigger" aria-label="Language">
+            <span class="flag">🇸🇦</span>
+            <span class="label">AR</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="lang-menu"></div>
+        </div>
+      </div>
+
+      <div class="nav-cta">
+        <a href="./login.html" class="btn btn-ghost" data-i18n-ar="دخول">Sign in</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main class="auth-page">
+    <div class="hero-bg">
+      <div class="hero-orb green" style="opacity: 0.4;"></div>
+      <div class="hero-orb purple" style="opacity: 0.4;"></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1100px; width: 100%; align-items: center; position: relative; z-index: 2;">
+      <!-- Left Side - Benefits -->
+      <div class="reveal" style="display: none;" id="benefits-side">
+        <span class="eyebrow">انضم إلى Formula AI</span>
+        <h1 style="font-size: 2.5rem; margin-bottom: 22px;">ابدأ رحلتك مع <span class="gradient-text">الذكاء الاصطناعي الكيميائي</span></h1>
+        <p style="color: var(--text-2); font-size: 1.1rem; line-height: 1.8; margin-bottom: 26px;">
+          آلاف الكيميائيين والمصنّعين يستخدمون Formula AI يومياً. انضم إليهم وابدأ مجاناً.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div style="width: 36px; height: 36px; background: rgba(0, 255, 136, 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" width="18" height="18"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 4px;">10 فورمولات مجانية شهرياً</div>
+              <div style="color: var(--text-3); font-size: 0.9rem;">ابدأ مجاناً بدون بطاقة ائتمان</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div style="width: 36px; height: 36px; background: rgba(0, 212, 255, 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2.5" width="18" height="18"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 4px;">وصول لـ 200,000+ فورمولا</div>
+              <div style="color: var(--text-3); font-size: 0.9rem;">قاعدة معرفة عالمية محدّثة</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div style="width: 36px; height: 36px; background: rgba(192, 132, 252, 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.5" width="18" height="18"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 4px;">تصدير PDF وExcel</div>
+              <div style="color: var(--text-3); font-size: 0.9rem;">جاهز للمصنع مباشرة</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: flex-start;">
+            <div style="width: 36px; height: 36px; background: rgba(255, 215, 0, 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" width="18" height="18"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 4px;">دعم باللغة العربية</div>
+              <div style="color: var(--text-3); font-size: 0.9rem;">فريق دعم محلي وفهم كامل لاحتياجاتك</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 32px; padding-top: 26px; border-top: 1px solid var(--border);">
+          <div style="display: flex;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--grad-primary); border: 3px solid var(--bg-1); display: flex; align-items: center; justify-content: center; color: var(--bg-1); font-weight: 900;">م</div>
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #00d4ff, #c084fc); border: 3px solid var(--bg-1); display: flex; align-items: center; justify-content: center; color: var(--bg-1); font-weight: 900; margin-inline-start: -10px;">س</div>
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #ffd700, #e94560); border: 3px solid var(--bg-1); display: flex; align-items: center; justify-content: center; color: var(--bg-1); font-weight: 900; margin-inline-start: -10px;">أ</div>
+          </div>
+          <div>
+            <div style="font-size: 0.95rem; font-weight: 700;">انضم إلى 12,400+ مستخدم</div>
+            <div style="color: var(--gold); font-size: 0.85rem;">★★★★★ متوسط تقييم 4.9/5</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side - Form -->
+      <div class="auth-card reveal delay-1" style="margin: 0;">
+        <h1 style="font-size: 1.8rem;" data-i18n-ar="إنشاء حساب جديد">Create your account</h1>
+        <p class="auth-sub" data-i18n-ar="10 فورمولات مجانية شهرياً - بدون بطاقة ائتمان">10 free formulas per month — no credit card required</p>
+
+        <form onsubmit="event.preventDefault(); window.location.href='./dashboard.html';">
+          <div class="form-group">
+            <label class="form-label" data-i18n-ar="الاسم الكامل">Full name</label>
+            <input type="text" class="form-input" placeholder="Jamil Abduljalil" data-i18n-attr="placeholder" data-i18n-placeholder-ar="جميل عبدالجليل" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n-ar="البريد الإلكتروني">Email</label>
+            <input type="email" class="form-input" placeholder="you@example.com" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" data-i18n-ar="الدولة">Country</label>
+              <select class="form-select">
+                <option>🇸🇦 السعودية</option>
+                <option>🇦🇪 الإمارات</option>
+                <option>🇪🇬 مصر</option>
+                <option>🇬🇭 غانا</option>
+                <option>🇳🇬 نيجيريا</option>
+                <option>🇲🇦 المغرب</option>
+                <option>🇯🇴 الأردن</option>
+                <option>🇰🇼 الكويت</option>
+                <option>🇶🇦 قطر</option>
+                <option>🇧🇭 البحرين</option>
+                <option>🇴🇲 عمان</option>
+                <option>🇱🇧 لبنان</option>
+                <option>🇹🇷 تركيا</option>
+                <option>أخرى</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n-ar="المجال">Role</label>
+              <select class="form-select">
+                <option data-i18n-ar="كيميائي مستقل">Independent chemist</option>
+                <option data-i18n-ar="صاحب مصنع">Factory owner</option>
+                <option data-i18n-ar="باحث/أكاديمي">Researcher / Academic</option>
+                <option data-i18n-ar="طالب">Student</option>
+                <option data-i18n-ar="مهندس جودة">Quality engineer</option>
+                <option data-i18n-ar="مدير منتجات">Product manager</option>
+                <option data-i18n-ar="أخرى">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n-ar="كلمة المرور">Password</label>
+            <input type="password" class="form-input" placeholder="At least 8 characters" data-i18n-attr="placeholder" data-i18n-placeholder-ar="8 أحرف على الأقل" required minlength="8" />
+          </div>
+
+          <label style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 22px; cursor: pointer; color: var(--text-2); font-size: 0.88rem; line-height: 1.6;">
+            <input type="checkbox" required style="accent-color: var(--primary); width: 18px; height: 18px; margin-top: 2px;" />
+            <span data-i18n-ar='أوافق على <a href="#" style="color: var(--primary);">شروط الاستخدام</a> و <a href="#" style="color: var(--primary);">سياسة الخصوصية</a>'>I agree to the <a href="#" style="color: var(--primary);">Terms of Service</a> and <a href="#" style="color: var(--primary);">Privacy Policy</a></span>
+          </label>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            <span data-i18n-ar="إنشاء الحساب وبدء التجربة">Create account & start free</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </form>
+
+        <div class="auth-foot" data-i18n-ar='لديك حساب بالفعل؟ <a href="./login.html">سجّل الدخول</a>'>
+          Already have an account? <a href="./login.html">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    @media (min-width: 1024px) {
+      #benefits-side { display: block !important; }
+    }
+  </style>
+
+  <script src="./assets/app.js?v=3"></script>
+</body>
+</html>
